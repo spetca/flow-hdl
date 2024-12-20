@@ -4,6 +4,12 @@ FlowHDL is an open source web-based flowgraph HDL generator inspired by tools li
 
 ## [DEMO](https://flow-hdl.netlify.com)
 
+## get started with dev
+
+1. clone
+2. `npm i`
+3. `npm run dev`
+
 # Concept
 
 1. build flowgraph
