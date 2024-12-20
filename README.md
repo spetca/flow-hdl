@@ -2,7 +2,7 @@
 
 FlowHDL is an open source web-based flowgraph HDL generator inspired by tools like Simulink HDL Coder and GNU Radio.
 
-## [DEMO](https://flow-hdl.netlify.com)
+## [DEMO](https://flow-hdl.netlify.app)
 
 ## get started with dev
 
