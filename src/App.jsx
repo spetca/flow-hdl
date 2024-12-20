@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Maximize2 } from "lucide-react";
 import FlowGraph from "./components/FlowGraph";
 import BlockLibrary from "./components/BlockLibrary";
+import { ReactFlowProvider } from "reactflow";
 
 const App = () => {
   const [blocks, setBlocks] = useState({});
@@ -36,7 +37,9 @@ const App = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* FlowGraph takes up 85% of the width */}
         <div className="flex-1">
-          <FlowGraph blocks={blocks} setBlocks={setBlocks} />
+          <ReactFlowProvider>
+            <FlowGraph blocks={blocks} setBlocks={setBlocks} />
+          </ReactFlowProvider>
         </div>
 
         {/* Block Library takes up 15% of the width */}

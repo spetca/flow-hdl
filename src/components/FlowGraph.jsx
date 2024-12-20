@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import ReactFlow, {
   Controls,
   Background,
@@ -6,12 +6,16 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   ConnectionLineType,
-  MarkerType,
+  MiniMap,
+  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { getBlockConfig, blockRegistry } from "./blockHelpers";
 import HDLNode from "./blockHelpers/HDLNode";
 import FileDrawer from "./FileDrawer";
+import FileExplorer from "./FileExplorer";
+
+import "@xyflow/react/dist/style.css";
 
 const nodeTypes = {
   hdlNode: HDLNode,
@@ -24,6 +28,36 @@ const FlowGraph = () => {
   const [generatedFiles, setGeneratedFiles] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      // Fit view: Ctrl+Alt+F or Ctrl+Alt+0
+      if (event.key === " " || event.code === "Space") {
+        event.preventDefault(); // Prevent page scroll
+        fitView({ padding: 0.1 });
+      }
+
+      // Zoom in: Ctrl++ or Ctrl+=
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        (event.key === "+" || event.key === "=")
+      ) {
+        event.preventDefault();
+        zoomIn();
+      }
+
+      // Zoom out: Ctrl+-
+      if ((event.ctrlKey || event.metaKey) && event.key === "-") {
+        event.preventDefault();
+        zoomOut();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [fitView, zoomIn, zoomOut]);
 
   const onConnect = useCallback(
     (params) => {
@@ -227,60 +261,63 @@ const FlowGraph = () => {
   };
 
   return (
-    <div className="relative w-full h-full">
-      <div className="flex items-center justify-between p-4 bg-gray-200">
-        <div>
-          <label htmlFor="moduleName" className="mr-2">
-            Top-level Module Name:
-          </label>
-          <input
-            type="text"
-            id="moduleName"
-            value={moduleName}
-            onChange={(e) => setModuleName(e.target.value)}
-            className="border rounded px-2 py-1"
-          />
+    <div className="h-screen">
+      {" "}
+      {/* or whatever height you need */}
+      <div className="relative w-full h-full">
+        <div className="flex items-center justify-between p-4 bg-gray-200">
+          <div>
+            <label htmlFor="moduleName" className="mr-2">
+              Top-level Module Name:
+            </label>
+            <input
+              type="text"
+              id="moduleName"
+              value={moduleName}
+              onChange={(e) => setModuleName(e.target.value)}
+              className="border rounded px-2 py-1"
+            />
+            <button
+              onClick={handleGenerateHDL}
+              className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Generate HDL
+            </button>
+          </div>
           <button
-            onClick={handleGenerateHDL}
-            className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
+            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={Object.keys(generatedFiles).length === 0}
           >
-            Generate HDL
+            {isDrawerOpen ? "Close" : "Open"} File Explorer
           </button>
         </div>
-        <button
-          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={Object.keys(generatedFiles).length === 0}
-        >
-          {isDrawerOpen ? "Close" : "Open"} File Explorer
-        </button>
+        <div className="w-full h-[calc(90vh-64px)]">
+          {" "}
+          {/* Adjust 64px based on your header/navbar height */}
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            nodeTypes={nodeTypes}
+            connectionLineType={ConnectionLineType.SmoothStep}
+            connectionLineStyle={{ strokeDasharray: "5 5" }}
+            snapToGrid={true}
+            snapGrid={[20, 20]}
+            defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+            fitView
+            className="w-full h-full"
+          >
+            <Background />
+            <Controls />
+            <MiniMap />
+          </ReactFlow>
+        </div>
       </div>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        nodeTypes={nodeTypes}
-        connectionLineType={ConnectionLineType.SmoothStep}
-        connectionLineStyle={{ strokeDasharray: "5 5" }}
-        snapToGrid={true}
-        snapGrid={[20, 20]}
-        defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
-        fitView
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
-      <FileDrawer
-        isOpen={isDrawerOpen}
-        files={generatedFiles}
-        selectedFile={selectedFile}
-        onFileSelect={setSelectedFile}
-        onClose={() => setIsDrawerOpen(false)}
-      />
     </div>
   );
 };
