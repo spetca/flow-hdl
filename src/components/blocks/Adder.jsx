@@ -10,7 +10,7 @@ const blockConfig = {
     DELAY_OUT: {
       type: "number",
       default: 1,
-      min: 1,
+      min: 0,
       max: 512,
       description: "Pipeline delay out",
     },
@@ -104,15 +104,24 @@ const generateVerilog = (params) => {
     reg [SUM_WIDTH-1:0] sum_pipe [0:DELAY_OUT-1];  // Fixed array declaration
     
     // Addition logic with pipeline
-    always @(posedge clk) begin
-        sum_pipe[0] <= a + b;
-        for (int i = 1; i < DELAY_OUT; i++) begin
-            sum_pipe[i] <= sum_pipe[i-1];
-        end
-    end
-    
-    assign sum = sum_pipe[DELAY_OUT-1];
+     // Addition logic with pipeline
+    generate
+        if (DELAY_OUT == 0) begin
+            // Direct output with no delay
+            assign sum = a + b;
+        end else begin
+            // Pipeline logic for DELAY_OUT > 0
+            always @(posedge clk) begin
+                sum_pipe[0] <= a + b; // Compute initial sum
+                for (int i = 1; i < DELAY_OUT; i = i + 1) begin
+                    sum_pipe[i] <= sum_pipe[i-1];
+                end
+            end
 
+            assign sum = sum_pipe[DELAY_OUT-1];
+        end
+    endgenerate
+    
 endmodule`;
 };
 

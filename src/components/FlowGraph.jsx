@@ -446,7 +446,60 @@ const FlowGraph = () => {
     }
   };
 
- return (
+  // Add these new handlers
+  const exportFlowGraph = () => {
+    const flowData = {
+      nodes,
+      edges,
+      moduleName,
+      hierarchicalBlocks: Array.from(hierarchicalBlocks.entries()),
+      navigationStack,
+      currentLevel,
+    };
+
+    const blob = new Blob([JSON.stringify(flowData, null, 2)], {
+      type: "text/plain",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${moduleName}_flowgraph.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const importFlowGraph = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const flowData = JSON.parse(e.target.result);
+
+        // Restore state
+        setNodes(flowData.nodes);
+        setEdges(flowData.edges);
+        setModuleName(flowData.moduleName);
+        setHierarchicalBlocks(new Map(flowData.hierarchicalBlocks));
+        setNavigationStack(flowData.navigationStack);
+        setCurrentLevel(flowData.currentLevel);
+
+        // Reset generated files and drawer state
+        setGeneratedFiles({});
+        setIsDrawerOpen(false);
+        setSelectedFile(null);
+      } catch (error) {
+        console.error("Error importing flow graph:", error);
+        alert("Error importing flow graph. Please check the file format.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
     <div className="h-screen">
       <div className="relative w-full h-full">
         {/* Header Section */}
@@ -468,6 +521,22 @@ const FlowGraph = () => {
             >
               Generate HDL
             </button>
+            {/* Export/Import buttons */}
+            <button
+              onClick={exportFlowGraph}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            >
+              Export Flow
+            </button>
+            <label className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors cursor-pointer">
+              Import Flow
+              <input
+                type="file"
+                accept=".json"
+                onChange={importFlowGraph}
+                className="hidden"
+              />
+            </label>
           </div>
           <button
             onClick={toggleFileDrawer}
@@ -500,23 +569,13 @@ const FlowGraph = () => {
             className="w-full h-full bg-gray-50"
           >
             {/* Primary Background Grid */}
-            <Background
-              color="#f2f2f2"
-              gap={13}
-              size={1}
-              variant="lines"
-            />
-            
+            <Background color="#f2f2f2" gap={13} size={1} variant="lines" />
+
             {/* Secondary Background Grid */}
-            <Background
-              color="#eee"
-              gap={130}
-              size={2}
-              variant="lines"
-            />
+            <Background color="#eee" gap={130} size={2} variant="lines" />
 
             {/* Controls with updated positioning */}
-            <Controls 
+            <Controls
               className="vertical bottom left"
               showZoom={true}
               showFitView={true}
@@ -530,9 +589,12 @@ const FlowGraph = () => {
               nodeColor={(node) => {
                 // Match colors to your node types
                 switch (node.data?.config?.type) {
-                  case 'inport': return '#0050FF';
-                  case 'outport': return '#FF2E8B';
-                  default: return '#A845D0';
+                  case "inport":
+                    return "#0050FF";
+                  case "outport":
+                    return "#FF2E8B";
+                  default:
+                    return "#A845D0";
                 }
               }}
               maskColor="rgba(255, 255, 255, 0.5)"
