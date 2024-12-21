@@ -19,9 +19,10 @@ const HDLNode = ({ data, id, selected }) => {
   };
 
   const handleUpdate = (updates) => {
-    // Separate parameters and ports
+    // Separate parameters, ports, and name
     const params = updates.params || {};
     const ports = updates.ports || currentConfig.ports;
+    const name = updates.name; // Extract name from updates
 
     // Update both local state and parent
     const newConfig = {
@@ -43,6 +44,7 @@ const HDLNode = ({ data, id, selected }) => {
     onParameterChange(id, {
       config: newConfig,
       params: params,
+      name: name, // Pass the name up to the parent
     });
   };
 
@@ -61,9 +63,9 @@ const HDLNode = ({ data, id, selected }) => {
         className="relative border-2 border-gray-200 rounded-md bg-white p-4"
         onDoubleClick={handleDoubleClick}
       >
-        {/* Node Title */}
+        {/* Node Title - Use custom name if available, fallback to type name */}
         <div className="text-center font-bold mb-2">
-          {data.name || currentConfig.name}
+          {data.name || data.config.name}
         </div>
 
         {/* Display Parameters if they exist */}
@@ -74,7 +76,7 @@ const HDLNode = ({ data, id, selected }) => {
             </div>
           )}
 
-        {/* Input Ports */}
+        {/* Input Ports - Update to use port names */}
         {Object.entries(currentConfig.ports.inputs || {}).map(
           ([portId, port]) => (
             <div key={`input-${portId}`} className="my-2">
@@ -114,7 +116,7 @@ const HDLNode = ({ data, id, selected }) => {
       {/* Configuration Dialog */}
       {isConfigOpen && (
         <BlockDialog
-          block={{ id, params: data.params }}
+          block={{ id, name: data.name, params: data.params }}
           config={currentConfig}
           isOpen={isConfigOpen}
           onClose={() => setIsConfigOpen(false)}

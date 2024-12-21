@@ -53,10 +53,10 @@ class SystemVerilogGenerator {
   generateWireDeclarations() {
     const wireDeclarations = new Set();
 
-    // Only generate wires for multi-hop connections or when needed
-    const multiHopConnections = this.findMultiHopConnections();
+    // Find connections that require wires
+    const wiringConnections = this.findWiringConnections();
 
-    multiHopConnections.forEach((connection) => {
+    wiringConnections.forEach((connection) => {
       const sourcePort = connection.sourcePort;
       const wireName = this.generateUniqueWireName(
         `wire_${connection.sourceName}_to_${connection.targetName}`
@@ -71,8 +71,8 @@ class SystemVerilogGenerator {
     return Array.from(wireDeclarations).join("\n");
   }
 
-  // Find connections that require intermediate wires
-  findMultiHopConnections() {
+  // Find connections that require wires
+  findWiringConnections() {
     const connections = [];
 
     // Track all connections
@@ -91,7 +91,6 @@ class SystemVerilogGenerator {
       const targetNode = conn.target;
       const sourcePort =
         sourceNode.data.config.ports.outputs[conn.sourceHandle];
-      const targetPort = targetNode.data.config.ports.inputs[conn.targetHandle];
 
       connections.push({
         sourceName: sourceNode.data.name || "unnamed_source",
@@ -105,6 +104,29 @@ class SystemVerilogGenerator {
 
   generateBlockInstances() {
     const instanceCounts = {};
+    const wireConnections = {};
+
+    // First, create a map of connections
+    this.edges.forEach((edge) => {
+      const sourceNode = this.nodes.find((n) => n.id === edge.source);
+      const targetNode = this.nodes.find((n) => n.id === edge.target);
+
+      if (sourceNode && targetNode) {
+        const wireName = this.generateUniqueWireName(
+          `wire_${sourceNode.data.name || "unnamed_source"}_to_${
+            targetNode.data.name || "unnamed_target"
+          }`
+        );
+        wireConnections[edge.source] = {
+          wireName,
+          sourceHandle: edge.sourceHandle,
+        };
+        wireConnections[edge.target] = {
+          wireName,
+          targetHandle: edge.targetHandle,
+        };
+      }
+    });
 
     return this.nodes
       .filter(
@@ -123,8 +145,40 @@ class SystemVerilogGenerator {
         // Generate parameter list with proper SystemVerilog syntax
         const parameterList = this.generateParameterList(node);
 
-        // Generate port mappings with direct connections or wire names
-        const portMappings = this.generatePortMappings(node, instanceName);
+        // Generate port mappings with wire connections
+        const portMappings = Object.entries(node.data.config.ports)
+          .flatMap(([portType, ports]) =>
+            Object.entries(ports).map(([portId, port]) => {
+              // Check if this port has a wire connection
+              const connection = this.edges.find(
+                (edge) =>
+                  (edge.source === node.id && edge.sourceHandle === portId) ||
+                  (edge.target === node.id && edge.targetHandle === portId)
+              );
+
+              if (connection) {
+                // Determine the wire name for this connection
+                const wireName = this.generateUniqueWireName(
+                  `wire_${
+                    this.nodes.find((n) => n.id === connection.source).data
+                      .name || "unnamed_source"
+                  }_to_${
+                    this.nodes.find((n) => n.id === connection.target).data
+                      .name || "unnamed_target"
+                  }`
+                );
+
+                return `\t\t.${portId}(${wireName})`;
+              } else if (node.data.name) {
+                // If not connected but has a name (e.g., input/output ports)
+                return `\t\t.${portId}(${node.data.name})`;
+              }
+
+              // Unconnected port
+              return `\t\t.${portId}()`;
+            })
+          )
+          .join(",\n");
 
         return `\t${moduleType}${parameterList} ${instanceName} (\n${portMappings}\n\t);`;
       })
@@ -147,42 +201,6 @@ class SystemVerilogGenerator {
     });
 
     return paramEntries.length > 0 ? ` #(\n${paramEntries.join(",\n")}\n)` : "";
-  }
-
-  // Generate port mappings with direct connections
-  generatePortMappings(node, instanceName) {
-    return Object.entries(node.data.config.ports)
-      .flatMap(([portType, ports]) =>
-        Object.entries(ports).map(([portId, port]) => {
-          // Find relevant connection
-          const connectedEdge = this.edges.find(
-            (edge) =>
-              (edge.source === node.id && edge.sourceHandle === portId) ||
-              (edge.target === node.id && edge.targetHandle === portId)
-          );
-
-          if (connectedEdge) {
-            const sourceNode = this.nodes.find(
-              (n) => n.id === connectedEdge.source
-            );
-            const targetNode = this.nodes.find(
-              (n) => n.id === connectedEdge.target
-            );
-
-            // If direct connection is possible, use the source node's name
-            if (sourceNode.data.name) {
-              return `\t\t.${portId}(${sourceNode.data.name})`;
-            }
-          } else if (node.data.name) {
-            // If not connected but has a name (e.g., input/output ports)
-            return `\t\t.${portId}(${node.data.name})`;
-          }
-
-          // Unconnected port
-          return `\t\t.${portId}()`;
-        })
-      )
-      .join(",\n");
   }
 
   generateBlockModules() {

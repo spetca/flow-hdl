@@ -207,13 +207,18 @@ const FlowGraph = () => {
   const handleAddBlock = (type, position) => {
     const config = getBlockConfig(type);
     const isHierarchical = type === "hierarchical";
+
+    // Generate default unique name based on type
+    const blockCount = nodes.filter((n) => n.data.config.type === type).length;
+    const defaultName = `${type}${blockCount}`;
+
     const newNode = {
       id: `${type}_${Date.now()}`,
       type: "hdlNode",
       position,
       data: {
         config,
-        name: "",
+        name: defaultName, // Add default name here
         params: {},
         isHierarchical,
         internalNodes: [],
@@ -248,7 +253,9 @@ const FlowGraph = () => {
         if (node.id === nodeId) {
           const newData = {
             ...node.data,
-            ...updates,
+            config: updates.config,
+            params: updates.params,
+            name: updates.name, // Update the name in the node data
           };
 
           // If this is a hierarchical block and ports were updated
@@ -259,20 +266,6 @@ const FlowGraph = () => {
                 prev.set(nodeId, {
                   ...blockData,
                   ports: updates.ports,
-                })
-              );
-            });
-          }
-
-          // If internal nodes/edges were updated
-          if (updates.internalNodes || updates.internalEdges) {
-            setHierarchicalBlocks((prev) => {
-              const blockData = prev.get(nodeId) || {};
-              return new Map(
-                prev.set(nodeId, {
-                  ...blockData,
-                  nodes: updates.internalNodes || blockData.nodes || [],
-                  edges: updates.internalEdges || blockData.edges || [],
                 })
               );
             });

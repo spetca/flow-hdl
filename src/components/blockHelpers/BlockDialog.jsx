@@ -2,12 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
+  const [blockName, setBlockName] = useState(block.name || ""); // Initialize with block.name
   const [portConfig, setPortConfig] = useState({
     inputs: { ...config.ports.inputs },
     outputs: { ...config.ports.outputs },
   });
-
-  // Add state for parameters
   const [paramConfig, setParamConfig] = useState({
     ...config.params,
   });
@@ -23,7 +22,8 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
     setParamConfig({
       ...config.params,
     });
-  }, [config]);
+    setBlockName(block.name || ""); // Update name when block changes
+  }, [config, block]);
 
   const handlePortChange = (portType, portName, property, value) => {
     setPortConfig((prev) => ({
@@ -49,12 +49,13 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
   };
 
   const handleSave = () => {
-    // Prepare updates with both port and parameter configurations
+    // Prepare updates with name, port and parameter configurations
     const updates = {
       ports: portConfig,
       params: Object.fromEntries(
         Object.entries(paramConfig).map(([key, value]) => [key, value.default])
       ),
+      name: blockName || config.name, // Use blockName if set, fallback to config.name
     };
 
     onUpdate(updates);
@@ -80,6 +81,21 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
           >
             ×
           </button>
+        </div>
+
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Block Name
+            </label>
+            <input
+              type="text"
+              value={blockName}
+              onChange={(e) => setBlockName(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              placeholder={config.name} // Use config.name as placeholder
+            />
+          </div>
         </div>
 
         {/* Content */}
