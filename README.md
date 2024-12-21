@@ -2,6 +2,12 @@
 
 FlowHDL is an open source web-based flowgraph HDL generator inspired by tools like Simulink HDL Coder and GNU Radio.
 
+<img width="1426" alt="image" src="https://github.com/user-attachments/assets/132b4761-7b5d-4200-99e4-01feb3d161c8" />
+
+## Flow is in its infancy, and is near barely functional! Please contribute if you are a web, react/vite, react flow, or HDL guru!
+
+## Top priorities
+
 ## [DEMO](https://flow-hdl.netlify.app)
 
 ## get started with dev
