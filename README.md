@@ -24,6 +24,10 @@ FlowHDL is an open source web-based flowgraph HDL generator inspired by tools li
 Please contribute if you are a web, react/vite, react flow, or HDL guru! We need a lot of help simplifying logic, components, and how blocks are created. this was bootstrapped with a lot of help from AI (sorry, im not a web dev by day) and will need some TLC to get to a sane state. 
 
 ### Top priorities
+- [ ] more sane UI styling
+- [ ] decent appearance on mobile, although not super high priority
+- [ ] better editor features/styling (like resizing editor pane)
+- [ ] better block explorer pane that can be hidden
 - [ ] better styling for react flow
      - [ ] highlight when wires clicks
      - [ ] better block appearance
@@ -49,51 +53,12 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
 2. generate hdl
 3. simulate however the hell you want
 
-# How to add blocks
+# How to add functional blocks
 
-Blocks are located in `/components/blocks/`. users define the interface and the underlying hdl. Adder example:
+Blocks are located in `/components/blocks/`. users define the interface and the underlying hdl. See `/components/blocks/adder` for a good example
 
-```
-import React from "react";
-import BaseBlock from "../blockHelpers/BaseBlock";
-
-// Just define the interface and HDL
-export const blockConfig = {
-  type: "adder",
-  name: "Adder",
-  description: "Adds two numbers together",
-  params: {
-    DEFAULT_WIDTH: { type: "number", default: 8, min: 1, max: 64 },
-    SIGNED: { type: "boolean", default: true },
-  },
-  ports: {
-    inputs: {
-      a: { width: 8, signed: true },
-      b: { width: 8, signed: true },
-    },
-    outputs: {
-      sum: { width: 8, signed: true },
-    },
-  },
-};
-
-export const generateVerilog = (params) => `
-module ${params.name} #(
-    parameter WIDTH = ${params.DEFAULT_WIDTH}
-)(
-    input ${params.SIGNED ? "signed" : "unsigned"} [WIDTH-1:0] a,
-    input ${params.SIGNED ? "signed" : "unsigned"} [WIDTH-1:0] b,
-    output ${params.SIGNED ? "signed" : "unsigned"} [WIDTH-1:0] sum
-);
-    assign sum = a + b;
-endmodule
-`;
-
-// The actual component just wraps BaseBlock
-const AdderBlock = (props) => <BaseBlock {...props} config={blockConfig} />;
-
-export default AdderBlock;
-```
+# Structure 
+This is only here so i can continually explain my project layout to AI. 
 
 ```
 src/
