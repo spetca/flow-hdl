@@ -4,6 +4,15 @@ FlowHDL is an open source web-based flowgraph HDL generator inspired by tools li
 
 <img width="1426" alt="image" src="https://github.com/user-attachments/assets/132b4761-7b5d-4200-99e4-01feb3d161c8" />
 
+## What it can do
+- create simple HDL from predfined user blocks
+- do some very crude error checking (sign/bitwidth matching on source and destinations)
+
+## WHat it cannot do (yet)
+- robust error checking - it can generate unsynth-able code
+- simulate
+- create test benches 
+
 ## quickstart keyboard shortcuts
 
 - `spacebar` fits graph to view
@@ -14,7 +23,7 @@ FlowHDL is an open source web-based flowgraph HDL generator inspired by tools li
 
 Please contribute if you are a web, react/vite, react flow, or HDL guru!
 
-### Top priorities/Low hanging fruit
+### Top priorities
 
 - [ ] better styling for react flow
      - [ ] highlight when wires clicks
@@ -25,6 +34,7 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru!
      - [ ] blocks should not allow connection if sign and bitwidth do not match source to destination
      - [ ] blocks should highlight a connection red if an error occurs after connection (sign/bitwidth changes and does not match anymore)
      - [ ] clicking signed in dailogs doesnt propogate state correctly
+- [ ] hierarchy needs added, you should be able to create subsystems like in simulink. i.e. flowgraphs within flowgraphs
   
 ## [DEMO](https://flow-hdl.netlify.app)
 
