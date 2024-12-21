@@ -8,7 +8,7 @@ FlowHDL is an open source web-based flowgraph HDL generator inspired by tools li
 - create simple HDL from predfined user blocks
 - do some very crude error checking (sign/bitwidth matching on source and destinations)
 
-## WHat it cannot do (yet)
+## What it cannot do (yet)
 - robust error checking - it can generate unsynth-able code
 - simulate
 - create test benches 
