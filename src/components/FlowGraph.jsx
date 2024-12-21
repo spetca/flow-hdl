@@ -446,11 +446,10 @@ const FlowGraph = () => {
     }
   };
 
-  return (
+ return (
     <div className="h-screen">
-      {" "}
-      {/* or whatever height you need */}
       <div className="relative w-full h-full">
+        {/* Header Section */}
         <div className="flex items-center justify-between p-4 bg-gray-200">
           <div>
             <label htmlFor="moduleName" className="mr-2">
@@ -465,14 +464,14 @@ const FlowGraph = () => {
             />
             <button
               onClick={handleGenerateHDL}
-              className="ml-4 px-4 py-2 bg-blue-500 text-white rounded"
+              className="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
               Generate HDL
             </button>
           </div>
           <button
             onClick={toggleFileDrawer}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={Object.keys(generatedFiles).length === 0}
           >
             {isDrawerOpen ? "Close" : "Open"} File Explorer
@@ -481,9 +480,8 @@ const FlowGraph = () => {
 
         <Breadcrumbs />
 
+        {/* Flow Graph Section */}
         <div className="w-full h-[calc(90vh-64px)]">
-          {" "}
-          {/* Adjust 64px based on your header/navbar height */}
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -499,20 +497,56 @@ const FlowGraph = () => {
             snapGrid={[20, 20]}
             defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
             fitView
-            className="w-full h-full"
+            className="w-full h-full bg-gray-50"
           >
-            <Background />
-            <Controls />
-            <MiniMap />
+            {/* Primary Background Grid */}
+            <Background
+              color="#f2f2f2"
+              gap={13}
+              size={1}
+              variant="lines"
+            />
+            
+            {/* Secondary Background Grid */}
+            <Background
+              color="#eee"
+              gap={130}
+              size={2}
+              variant="lines"
+            />
+
+            {/* Controls with updated positioning */}
+            <Controls 
+              className="vertical bottom left"
+              showZoom={true}
+              showFitView={true}
+              showInteractive={false}
+            />
+
+            {/* Enhanced MiniMap */}
+            <MiniMap
+              className="bottom right"
+              style={{ height: 100 }}
+              nodeColor={(node) => {
+                // Match colors to your node types
+                switch (node.data?.config?.type) {
+                  case 'inport': return '#0050FF';
+                  case 'outport': return '#FF2E8B';
+                  default: return '#A845D0';
+                }
+              }}
+              maskColor="rgba(255, 255, 255, 0.5)"
+              nodeStrokeWidth={3}
+            />
           </ReactFlow>
+
+          {/* Keep your FileDrawer component */}
           <FileDrawer
             isOpen={isDrawerOpen}
             files={generatedFiles}
             selectedFile={selectedFile}
             onFileSelect={setSelectedFile}
-            onClose={() => {
-              toggleFileDrawer();
-            }}
+            onClose={toggleFileDrawer}
           />
         </div>
       </div>

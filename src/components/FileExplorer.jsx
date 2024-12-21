@@ -1,12 +1,13 @@
+// FileExplorer.jsx
 import React from "react";
 
 const FileExplorer = ({ files, onFileSelect }) => {
   return (
-    <div>
+    <div className="overflow-y-auto max-h-32">
       {Object.entries(files).map(([fileName, content]) => (
         <div
           key={fileName}
-          className="mb-2 cursor-pointer"
+          className="py-2 px-3 cursor-pointer hover:bg-gray-100 rounded transition-colors"
           onClick={() => onFileSelect({ name: fileName, content })}
         >
           {fileName}

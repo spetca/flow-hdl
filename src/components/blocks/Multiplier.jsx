@@ -1,5 +1,5 @@
 import React from "react";
-import BaseBlock from "../blockHelpers/BaseBlock";
+import HDLNode from "../blockHelpers/HDLNode";
 
 export const blockConfig = {
   type: "multiplier",
@@ -33,7 +33,15 @@ endmodule
 `;
 
 const MultiplierBlock = (props) => (
-  <BaseBlock {...props} config={blockConfig} />
+  <HDLNode
+    {...props}
+    data={{
+      config: blockConfig,
+      name: props.name,
+      params: props.params,
+      onParameterChange: props.onParameterChange,
+    }}
+  />
 );
 
 export default MultiplierBlock;

@@ -24,7 +24,7 @@ const App = () => {
     <div className="w-screen h-screen flex flex-col">
       {/* Top Bar */}
       <div className="h-12 border-b flex items-center px-4 bg-white">
-        <h1 className="text-xl font-semibold">~flow hdl~</h1>
+        <h1 className="text-xl font-semibold">flow hdl</h1>
         <button
           className="ml-auto p-2 hover:bg-gray-100 rounded-md"
           onClick={() => document.documentElement.requestFullscreen()}
