@@ -97,28 +97,28 @@ const generateVerilog = (params) => {
     input wire ${portA.signed ? "signed " : ""}[A_WIDTH-1:0] a,
     input wire ${portB.signed ? "signed " : ""}[B_WIDTH-1:0] b,
     input wire clk,  // Clock signal defined in block
-    output wire ${portSum.signed ? "signed " : ""}[SUM_WIDTH-1:0] sum
+    output reg ${portSum.signed ? "signed " : ""}[SUM_WIDTH-1:0] sum
 );
 
     // Internal signals for pipelining
     reg [SUM_WIDTH-1:0] sum_pipe [0:DELAY_OUT-1];  // Fixed array declaration
     
-    // Addition logic with pipeline
-     // Addition logic with pipeline
+    // Addition logic with pipeline    
     generate
         if (DELAY_OUT == 0) begin
-            // Direct output with no delay
-            assign sum = a + b;
+            // Direct assignment for zero delay
+            always @(posedge clk) begin
+                sum <= a + b;
+            end
         end else begin
-            // Pipeline logic for DELAY_OUT > 0
+            integer i;
             always @(posedge clk) begin
                 sum_pipe[0] <= a + b; // Compute initial sum
-                for (int i = 1; i < DELAY_OUT; i = i + 1) begin
+                for (i = 1; i < DELAY_OUT; i = i + 1) begin
                     sum_pipe[i] <= sum_pipe[i-1];
                 end
+                sum <= sum_pipe[DELAY_OUT-1]; // Final stage feeds the output
             end
-
-            assign sum = sum_pipe[DELAY_OUT-1];
         end
     endgenerate
     
