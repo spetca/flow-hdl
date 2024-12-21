@@ -6,20 +6,22 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
     inputs: { ...config.ports.inputs },
     outputs: { ...config.ports.outputs },
   });
-  const dialogRef = useRef(null);
 
-  // Handle click outside
-  const handleClickOutside = (e) => {
-    if (dialogRef.current && !dialogRef.current.contains(e.target)) {
-      onClose();
-    }
-  };
+  // Add state for parameters
+  const [paramConfig, setParamConfig] = useState({
+    ...config.params,
+  });
+
+  const dialogRef = useRef(null);
 
   // Update local state when props change
   useEffect(() => {
     setPortConfig({
       inputs: { ...config.ports.inputs },
       outputs: { ...config.ports.outputs },
+    });
+    setParamConfig({
+      ...config.params,
     });
   }, [config]);
 
@@ -36,29 +38,41 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
     }));
   };
 
+  const handleParamChange = (paramName, value) => {
+    setParamConfig((prev) => ({
+      ...prev,
+      [paramName]: {
+        ...prev[paramName],
+        default: value,
+      },
+    }));
+  };
+
   const handleSave = () => {
-    onUpdate({
+    // Prepare updates with both port and parameter configurations
+    const updates = {
       ports: portConfig,
-    });
+      params: Object.fromEntries(
+        Object.entries(paramConfig).map(([key, value]) => [key, value.default])
+      ),
+    };
+
+    onUpdate(updates);
     onClose();
   };
 
   if (!isOpen) return null;
 
-  const dialog = (
-    <div
-      className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
-      onClick={handleClickOutside}
-    >
+  return createPortal(
+    <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div
         ref={dialogRef}
         className="bg-white rounded-lg shadow-2xl w-full max-w-2xl"
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
-            Configure Ports: {config.name}
+            Configure Block: {config.name}
           </h2>
           <button
             onClick={onClose}
@@ -70,6 +84,48 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
 
         {/* Content */}
         <div className="px-6 py-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+          {/* Parameters Section */}
+          {Object.keys(config.params || {}).length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">Parameters</h3>
+              <div className="space-y-3">
+                {Object.entries(config.params).map(([name, param]) => (
+                  <div key={name} className="p-3 border rounded-md">
+                    <div className="font-medium mb-2">{name}</div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          Value ({param.type})
+                        </label>
+                        {param.type === "boolean" ? (
+                          <input
+                            type="checkbox"
+                            checked={paramConfig[name].default}
+                            onChange={(e) =>
+                              handleParamChange(name, e.target.checked)
+                            }
+                            className="rounded border-gray-300"
+                          />
+                        ) : (
+                          <input
+                            type="number"
+                            value={paramConfig[name].default}
+                            min={param.min}
+                            max={param.max}
+                            onChange={(e) =>
+                              handleParamChange(name, Number(e.target.value))
+                            }
+                            className="block w-full rounded-md border-gray-300 shadow-sm"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Input Ports */}
           {Object.keys(config.ports.inputs || {}).length > 0 && (
             <div className="mb-6">
@@ -193,10 +249,9 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-
-  return createPortal(dialog, document.body);
 };
 
 export default BlockDialog;

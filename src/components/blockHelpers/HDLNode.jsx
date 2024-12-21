@@ -19,17 +19,39 @@ const HDLNode = ({ data, id, selected }) => {
   };
 
   const handleUpdate = (updates) => {
+    // Separate parameters and ports
+    const params = updates.params || {};
+    const ports = updates.ports || currentConfig.ports;
+
     // Update both local state and parent
     const newConfig = {
       ...currentConfig,
-      ports: updates.ports,
-      params: updates.params,
+      ports: ports,
+      // Merge new params with existing config
+      params: {
+        ...currentConfig.params,
+        ...Object.fromEntries(
+          Object.entries(params).map(([key, value]) => [
+            key,
+            { default: value },
+          ])
+        ),
+      },
     };
+
     setCurrentConfig(newConfig);
     onParameterChange(id, {
       config: newConfig,
-      params: updates.params,
+      params: params,
     });
+  };
+
+  // Render parameters as a string
+  const renderParameters = () => {
+    if (!currentConfig.params) return null;
+    return Object.entries(currentConfig.params)
+      .map(([name, param]) => `${name}: ${param.default}`)
+      .join(", ");
   };
 
   // Use currentConfig instead of config for rendering
@@ -43,6 +65,14 @@ const HDLNode = ({ data, id, selected }) => {
         <div className="text-center font-bold mb-2">
           {data.name || currentConfig.name}
         </div>
+
+        {/* Display Parameters if they exist */}
+        {currentConfig.params &&
+          Object.keys(currentConfig.params).length > 0 && (
+            <div className="text-xs text-gray-600 mb-2 text-center">
+              {renderParameters()}
+            </div>
+          )}
 
         {/* Input Ports */}
         {Object.entries(currentConfig.ports.inputs || {}).map(

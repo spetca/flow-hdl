@@ -14,6 +14,7 @@ import { getBlockConfig, blockRegistry } from "./blockHelpers";
 import HDLNode from "./blockHelpers/HDLNode";
 import FileDrawer from "./FileDrawer";
 import FileExplorer from "./FileExplorer";
+import SystemVerilogGenerator from "./generators/SystemVerilogGenerator";
 
 import "@xyflow/react/dist/style.css";
 
@@ -420,9 +421,18 @@ const FlowGraph = () => {
     return files;
   }, [nodes, edges, moduleName]);
 
+  // Replace the generateSystemVerilog and handleGenerateHDL functions with:
   const handleGenerateHDL = () => {
-    // Generate new files
-    const files = generateSystemVerilog();
+    // Create a new generator instance
+    const generator = new SystemVerilogGenerator(
+      nodes,
+      edges,
+      moduleName,
+      hierarchicalBlocks
+    );
+
+    // Generate the files
+    const files = generator.generate();
 
     // Clear existing states
     setIsDrawerOpen(false);

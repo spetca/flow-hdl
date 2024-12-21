@@ -1,144 +1,238 @@
-export class VerilogGenerator {
-  constructor() {
-    this.modules = new Map();
-    this.wireCounter = 0;
+import { blockRegistry } from "../blockHelpers";
+
+class SystemVerilogGenerator {
+  constructor(nodes, edges, moduleName, hierarchicalBlocks) {
+    this.nodes = nodes;
+    this.edges = edges;
+    this.moduleName = moduleName;
+    this.hierarchicalBlocks = hierarchicalBlocks;
+    this.files = {};
+    this.usedWireNames = new Set(); // Track used wire names
   }
 
-  generateWireName(source, target, portName) {
-    return `wire_${source}_${target}_${portName}`;
-  }
-
-  generateModuleVerilog(moduleId, nodes, edges, isTopLevel = false) {
-    // Collect all ports
-    const ports = this.collectPorts(nodes, isTopLevel);
-
-    // Generate wire declarations
-    const wires = this.generateWireDeclarations(edges);
-
-    // Generate module instantiations
-    const instances = this.generateInstances(nodes, edges);
-
-    // Generate the complete module
-    const moduleVerilog = `module ${moduleId} (
-    ${ports.join(",\n  ")}
-  );
-  
-  ${wires.join("\n")}
-  
-  ${instances.join("\n\n")}
-  
-  endmodule`;
-
-    this.modules.set(moduleId, moduleVerilog);
-    return moduleVerilog;
-  }
-
-  collectPorts(nodes, isTopLevel) {
-    const ports = [];
-
-    // For top level modules, only include external ports
-    if (isTopLevel) {
-      const inputNodes = nodes.filter((n) => n.data.config.type === "inport");
-      const outputNodes = nodes.filter((n) => n.data.config.type === "outport");
-
-      inputNodes.forEach((node) => {
-        const port = node.data.config.ports.outputs.out;
-        ports.push(
-          `input ${port.signed ? "signed " : ""}[${port.width - 1}:0] ${
-            node.data.name
-          }`
-        );
+  generateModuleHeader() {
+    const inputPorts = this.nodes
+      .filter((node) => node.data.config.type === "inport")
+      .map((node) => {
+        const portConfig = node.data.config.ports.outputs.out;
+        return `input ${this.getPortDeclaration(portConfig)} ${node.data.name}`;
       });
 
-      outputNodes.forEach((node) => {
-        const port = node.data.config.ports.inputs.in;
-        ports.push(
-          `output ${port.signed ? "signed " : ""}[${port.width - 1}:0] ${
-            node.data.name
-          }`
-        );
+    const outputPorts = this.nodes
+      .filter((node) => node.data.config.type === "outport")
+      .map((node) => {
+        const portConfig = node.data.config.ports.inputs.in;
+        return `output ${this.getPortDeclaration(portConfig)} ${
+          node.data.name
+        }`;
       });
+
+    return `module ${this.moduleName} (\n${[...inputPorts, ...outputPorts].join(
+      ",\n"
+    )}\n);`;
+  }
+
+  // Helper method to generate port declaration
+  getPortDeclaration(portConfig) {
+    const signType = portConfig.signed ? "signed" : "logic";
+    return `${signType} [${portConfig.width - 1}:0]`;
+  }
+
+  // Generate a unique wire name
+  generateUniqueWireName(baseName) {
+    let wireName = baseName;
+    let counter = 1;
+    while (this.usedWireNames.has(wireName)) {
+      wireName = `${baseName}_${counter}`;
+      counter++;
     }
-
-    return ports;
+    this.usedWireNames.add(wireName);
+    return wireName;
   }
 
-  generateWireDeclarations(edges) {
-    return edges.map((edge) => {
-      const width = edge.data.width || 32; // Default to 32 bits if not specified
-      return `wire [${width - 1}:0] ${edge.data.wireName};`;
+  generateWireDeclarations() {
+    const wireDeclarations = new Set();
+
+    // Only generate wires for multi-hop connections or when needed
+    const multiHopConnections = this.findMultiHopConnections();
+
+    multiHopConnections.forEach((connection) => {
+      const sourcePort = connection.sourcePort;
+      const wireName = this.generateUniqueWireName(
+        `wire_${connection.sourceName}_to_${connection.targetName}`
+      );
+
+      const wireDecl = `logic ${sourcePort.signed ? "signed " : ""}[${
+        sourcePort.width - 1
+      }:0] ${wireName};`;
+      wireDeclarations.add(wireDecl);
+    });
+
+    return Array.from(wireDeclarations).join("\n");
+  }
+
+  // Find connections that require intermediate wires
+  findMultiHopConnections() {
+    const connections = [];
+
+    // Track all connections
+    const allConnections = this.edges
+      .map((edge) => ({
+        source: this.nodes.find((n) => n.id === edge.source),
+        target: this.nodes.find((n) => n.id === edge.target),
+        sourceHandle: edge.sourceHandle,
+        targetHandle: edge.targetHandle,
+      }))
+      .filter((conn) => conn.source && conn.target);
+
+    // Determine which connections need wires
+    allConnections.forEach((conn) => {
+      const sourceNode = conn.source;
+      const targetNode = conn.target;
+      const sourcePort =
+        sourceNode.data.config.ports.outputs[conn.sourceHandle];
+      const targetPort = targetNode.data.config.ports.inputs[conn.targetHandle];
+
+      connections.push({
+        sourceName: sourceNode.data.name || "unnamed_source",
+        targetName: targetNode.data.name || "unnamed_target",
+        sourcePort: sourcePort,
+      });
+    });
+
+    return connections;
+  }
+
+  generateBlockInstances() {
+    const instanceCounts = {};
+
+    return this.nodes
+      .filter(
+        (node) =>
+          node.data.config.type !== "inport" &&
+          node.data.config.type !== "outport"
+      )
+      .map((node) => {
+        const moduleType = node.data.config.type;
+        if (!instanceCounts[moduleType]) {
+          instanceCounts[moduleType] = 0;
+        }
+        const instanceNumber = instanceCounts[moduleType]++;
+        const instanceName = `u_${moduleType}_${instanceNumber}`;
+
+        // Generate parameter list with proper SystemVerilog syntax
+        const parameterList = this.generateParameterList(node);
+
+        // Generate port mappings with direct connections or wire names
+        const portMappings = this.generatePortMappings(node, instanceName);
+
+        return `\t${moduleType}${parameterList} ${instanceName} (\n${portMappings}\n\t);`;
+      })
+      .join("\n\n");
+  }
+
+  // Generate parameter list for module instantiation
+  generateParameterList(node) {
+    const params = node.data.params || {};
+    const blockConfig = blockRegistry[node.data.config.type];
+
+    if (Object.keys(params).length === 0) return "";
+
+    const paramEntries = Object.entries(params).map(([paramName, value]) => {
+      // Prioritize the actual parameter value over default
+      const formattedValue =
+        typeof value === "boolean" ? (value ? "1" : "0") : value;
+
+      return `\t\t.${paramName}(${formattedValue})`;
+    });
+
+    return paramEntries.length > 0 ? ` #(\n${paramEntries.join(",\n")}\n)` : "";
+  }
+
+  // Generate port mappings with direct connections
+  generatePortMappings(node, instanceName) {
+    return Object.entries(node.data.config.ports)
+      .flatMap(([portType, ports]) =>
+        Object.entries(ports).map(([portId, port]) => {
+          // Find relevant connection
+          const connectedEdge = this.edges.find(
+            (edge) =>
+              (edge.source === node.id && edge.sourceHandle === portId) ||
+              (edge.target === node.id && edge.targetHandle === portId)
+          );
+
+          if (connectedEdge) {
+            const sourceNode = this.nodes.find(
+              (n) => n.id === connectedEdge.source
+            );
+            const targetNode = this.nodes.find(
+              (n) => n.id === connectedEdge.target
+            );
+
+            // If direct connection is possible, use the source node's name
+            if (sourceNode.data.name) {
+              return `\t\t.${portId}(${sourceNode.data.name})`;
+            }
+          } else if (node.data.name) {
+            // If not connected but has a name (e.g., input/output ports)
+            return `\t\t.${portId}(${node.data.name})`;
+          }
+
+          // Unconnected port
+          return `\t\t.${portId}()`;
+        })
+      )
+      .join(",\n");
+  }
+
+  generateBlockModules() {
+    this.nodes.forEach((node) => {
+      if (
+        node.data.config.type !== "inport" &&
+        node.data.config.type !== "outport"
+      ) {
+        const blockConfig = blockRegistry[node.data.config.type];
+
+        if (node.data.isHierarchical) {
+          const hierarchicalData = this.hierarchicalBlocks.get(node.id);
+          if (hierarchicalData) {
+            const blockModule = blockConfig.generateVerilog(
+              {
+                name: node.data.name,
+                ...node.data.params,
+              },
+              hierarchicalData.nodes,
+              hierarchicalData.edges
+            );
+            this.files[`${node.data.name}.sv`] = blockModule;
+          }
+        } else {
+          const blockModule = blockConfig.generateVerilog({
+            name: node.data.name,
+            ...node.data.params,
+          });
+          this.files[`${node.data.name}.sv`] = blockModule;
+        }
+      }
     });
   }
 
-  generateInstances(nodes, edges) {
-    return nodes
-      .filter((node) => !["inport", "outport"].includes(node.data.config.type))
-      .map((node) => {
-        const portMappings = this.generatePortMappings(node, edges);
-        const instanceName = `${node.data.config.type}_${node.id}`;
+  generate() {
+    // Reset used wire names
+    this.usedWireNames.clear();
 
-        return `  ${node.data.config.type} ${instanceName} (
-      ${portMappings.join(",\n    ")}
-    );`;
-      });
-  }
+    // Generate the main module with wire declarations
+    const wireDeclarations = this.generateWireDeclarations();
 
-  generatePortMappings(node, edges) {
-    const mappings = [];
+    this.files[
+      `${this.moduleName}.sv`
+    ] = `${this.generateModuleHeader()}\n\n// Wire declarations\n${wireDeclarations}\n\n// Module instances\n${this.generateBlockInstances()}\n\nendmodule`;
 
-    // Input port mappings
-    Object.entries(node.data.config.ports.inputs).forEach(
-      ([portName, port]) => {
-        const edge = edges.find(
-          (e) => e.target === node.id && e.targetHandle === portName
-        );
-        const wireName = edge ? edge.data.wireName : portName;
-        mappings.push(`.${portName}(${wireName})`);
-      }
-    );
+    // Generate individual block modules
+    this.generateBlockModules();
 
-    // Output port mappings
-    Object.entries(node.data.config.ports.outputs).forEach(
-      ([portName, port]) => {
-        const edge = edges.find(
-          (e) => e.source === node.id && e.sourceHandle === portName
-        );
-        const wireName = edge ? edge.data.wireName : portName;
-        mappings.push(`.${portName}(${wireName})`);
-      }
-    );
-
-    return mappings;
-  }
-
-  getGeneratedModules() {
-    return Object.fromEntries(this.modules);
+    return this.files;
   }
 }
 
-// Helper function to traverse hierarchical blocks
-export const traverseHierarchy = (nodes, edges, onVisitNode) => {
-  const visited = new Set();
-
-  const visit = (nodeId) => {
-    if (visited.has(nodeId)) return;
-    visited.add(nodeId);
-
-    const node = nodes.find((n) => n.id === nodeId);
-    if (!node) return;
-
-    // Visit connected nodes
-    edges.forEach((edge) => {
-      if (edge.source === nodeId) visit(edge.target);
-      if (edge.target === nodeId) visit(edge.source);
-    });
-
-    // Process the node
-    onVisitNode(node);
-  };
-
-  // Start traversal from all root nodes (nodes with no incoming edges)
-  nodes
-    .filter((node) => !edges.some((edge) => edge.target === node.id))
-    .forEach((node) => visit(node.id));
-};
+export default SystemVerilogGenerator;

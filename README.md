@@ -62,4 +62,23 @@ const AdderBlock = (props) => <BaseBlock {...props} config={blockConfig} />;
 export default AdderBlock;
 ```
 
-Useres
+```
+src/
+├── components/
+│   ├── blockHelpers/
+│   │   ├── BaseBlock.jsx          # Existing - Base block functionality
+│   │   ├── BlockDialog.jsx        # Existing - Block configuration dialog
+│   │   ├── HDLNode.jsx           # Existing - Visual node representation
+│   │   ├── HierarchicalBlock.jsx  # New - Handles nested flow graphs
+│   │   └── index.js              # Export all block helper components
+│   ├── blocks/
+│   │   ├── Adder.jsx          # Existing - Base block functionality
+│   │   ├── Multiplier.jsx        # Existing - Block configuration dialog
+│   ├── generators/
+│   │   ├── SystemVerilogGenerator.jsx          # Existing - Base block functionality
+│   ├── BlockLibrary.jsx          # Existing - Shows available blocks
+│   ├── FileDrawer.jsx           # Existing - File management UI
+│   ├── FileEditor.jsx           # Existing - Edit generated files
+│   ├── FileExplorer.jsx         # Existing - Browse generated files
+│   └── FlowGraph.jsx            # Existing - Main graph component
+```
