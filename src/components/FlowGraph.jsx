@@ -31,6 +31,226 @@ const FlowGraph = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [hierarchicalBlocks, setHierarchicalBlocks] = useState(new Map());
 
+  // Load default flow graph on mount
+  useEffect(() => {
+    const loadDefaultFlow = async () => {
+      try {
+        const defaultFlow = {
+          nodes: [
+            {
+              id: "inport_1734818840577",
+              type: "hdlNode",
+              position: {
+                x: -140,
+                y: 40,
+              },
+              data: {
+                config: {
+                  type: "inport",
+                  name: "Input Port",
+                  description: "Input port for HDL module",
+                  ports: {
+                    inputs: {},
+                    outputs: {
+                      out: {
+                        width: 32,
+                        signed: false,
+                      },
+                    },
+                  },
+                  params: {
+                    width: {
+                      type: "number",
+                      default: 32,
+                    },
+                    signed: {
+                      type: "boolean",
+                      default: false,
+                    },
+                  },
+                },
+                name: "inport0",
+                params: {},
+                isHierarchical: false,
+                internalNodes: [],
+                internalEdges: [],
+              },
+              width: 200,
+              height: 150,
+              selected: true,
+              positionAbsolute: {
+                x: -140,
+                y: 40,
+              },
+              dragging: false,
+            },
+            {
+              id: "adder_1734818874859",
+              type: "hdlNode",
+              position: {
+                x: 240,
+                y: 40,
+              },
+              data: {
+                config: {
+                  type: "adder",
+                  name: "Adder",
+                  description: "Adds two numbers together",
+                  params: {
+                    DELAY_OUT: {
+                      default: 1,
+                    },
+                  },
+                  ports: {
+                    inputs: {
+                      a: {
+                        width: 32,
+                        signed: false,
+                        description: "First input operand",
+                      },
+                      b: {
+                        width: 32,
+                        signed: false,
+                        description: "Second input operand",
+                      },
+                    },
+                    outputs: {
+                      sum: {
+                        width: 64,
+                        signed: false,
+                        description: "Sum of inputs",
+                      },
+                    },
+                  },
+                },
+                name: "adder0",
+                params: {
+                  DELAY_OUT: 1,
+                },
+                isHierarchical: false,
+                internalNodes: [],
+                internalEdges: [],
+              },
+              width: 200,
+              height: 150,
+              selected: false,
+              positionAbsolute: {
+                x: 240,
+                y: 40,
+              },
+              dragging: false,
+            },
+            {
+              id: "outport_1734818889177",
+              type: "hdlNode",
+              position: {
+                x: 620,
+                y: 40,
+              },
+              data: {
+                config: {
+                  type: "outport",
+                  name: "Output Port",
+                  description: "Output port for HDL module",
+                  ports: {
+                    inputs: {
+                      in: {
+                        width: 64,
+                        signed: false,
+                      },
+                    },
+                    outputs: {},
+                  },
+                  params: {
+                    width: {
+                      default: 32,
+                    },
+                    signed: {
+                      default: false,
+                    },
+                  },
+                },
+                name: "outport0",
+                params: {
+                  width: 32,
+                  signed: false,
+                },
+                isHierarchical: false,
+                internalNodes: [],
+                internalEdges: [],
+              },
+              width: 200,
+              height: 150,
+              selected: false,
+              positionAbsolute: {
+                x: 620,
+                y: 40,
+              },
+              dragging: false,
+            },
+          ],
+          edges: [
+            {
+              source: "adder_1734818874859",
+              sourceHandle: "sum",
+              target: "outport_1734818889177",
+              targetHandle: "in",
+              type: "step",
+              style: {
+                stroke: "#333",
+              },
+              id: "reactflow__edge-adder_1734818874859sum-outport_1734818889177in",
+            },
+            {
+              source: "inport_1734818840577",
+              sourceHandle: "out",
+              target: "adder_1734818874859",
+              targetHandle: "a",
+              type: "step",
+              style: {
+                stroke: "#333",
+              },
+              id: "reactflow__edge-inport_1734818840577out-adder_1734818874859a",
+            },
+            {
+              source: "inport_1734818840577",
+              sourceHandle: "out",
+              target: "adder_1734818874859",
+              targetHandle: "b",
+              type: "step",
+              style: {
+                stroke: "#333",
+              },
+              id: "reactflow__edge-inport_1734818840577out-adder_1734818874859b",
+            },
+          ],
+          moduleName: "top",
+          hierarchicalBlocks: [],
+          navigationStack: [
+            {
+              id: "top",
+              name: "Top Level",
+              nodes: [],
+              edges: [],
+            },
+          ],
+          currentLevel: 0,
+        };
+
+        // Set the states
+        setNodes(defaultFlow.nodes);
+        setEdges(defaultFlow.edges);
+        setModuleName(defaultFlow.moduleName);
+        setHierarchicalBlocks(new Map(defaultFlow.hierarchicalBlocks));
+        setNavigationStack(defaultFlow.navigationStack);
+        setCurrentLevel(defaultFlow.currentLevel);
+      } catch (error) {
+        console.error("Error loading default flow graph:", error);
+      }
+    };
+
+    loadDefaultFlow();
+  }, []); // Empty dependency array means this runs once on mount
   const handleEnterSubsystem = (subsystemId, subsystemName) => {
     // Save current nodes/edges to current level
     setNavigationStack((stack) => {
