@@ -26,6 +26,7 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
 ### Top priorities
 - [ ] more sane UI styling
 - [ ] decent appearance on mobile, although not super high priority
+- [ ] better user defined block experience. a web-laymen, but HDL expert, should be able to quickly add blocks via a well defined structure without much web-code overhead. 
 - [ ] better editor features/styling (like resizing editor pane)
 - [ ] better block explorer pane that can be hidden
 - [ ] better styling for react flow
@@ -38,7 +39,6 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
      - [ ] blocks should highlight a connection red if an error occurs after connection (sign/bitwidth changes and does not match anymore)
      - [ ] clicking signed in dailogs doesnt propogate state correctly
 - [ ] hierarchy needs added, you should be able to create subsystems like in simulink. i.e. flowgraphs within flowgraphs
-  
 ## [DEMO](https://flow-hdl.netlify.app)
 
 ## get started with dev
