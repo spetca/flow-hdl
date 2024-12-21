@@ -28,6 +28,103 @@ const FlowGraph = () => {
   const [generatedFiles, setGeneratedFiles] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [hierarchicalBlocks, setHierarchicalBlocks] = useState(new Map());
+
+  const handleEnterSubsystem = (subsystemId, subsystemName) => {
+    // Save current nodes/edges to current level
+    setNavigationStack((stack) => {
+      const newStack = [...stack];
+      newStack[currentLevel] = {
+        ...newStack[currentLevel],
+        nodes,
+        edges,
+      };
+      return newStack;
+    });
+
+    // Push new level to stack
+    setNavigationStack((stack) => [
+      ...stack,
+      {
+        id: subsystemId,
+        name: subsystemName,
+        nodes: [],
+        edges: [],
+      },
+    ]);
+    setCurrentLevel((prev) => prev + 1);
+
+    // Clear current view for new subsystem
+    setNodes([]);
+    setEdges([]);
+  };
+
+  const handleNavigateUp = () => {
+    if (currentLevel === 0) return;
+
+    // Save current subsystem state
+    setNavigationStack((stack) => {
+      const newStack = [...stack];
+      newStack[currentLevel] = {
+        ...newStack[currentLevel],
+        nodes,
+        edges,
+      };
+      return newStack;
+    });
+    // Go up one level
+    setCurrentLevel((prev) => prev - 1);
+
+    // Restore parent level's nodes/edges
+    const parentLevel = navigationStack[currentLevel - 1];
+    setNodes(parentLevel.nodes);
+    setEdges(parentLevel.edges);
+  };
+
+  const Breadcrumbs = () => (
+    <div className="flex items-center space-x-2 px-4 py-2 bg-gray-100">
+      {navigationStack.slice(0, currentLevel + 1).map((level, index) => (
+        <React.Fragment key={level.id}>
+          {index > 0 && <span className="text-gray-500">/</span>}
+          <button
+            onClick={() => {
+              if (index < currentLevel) {
+                // Save current state
+                const newStack = [...navigationStack];
+                newStack[currentLevel] = {
+                  ...newStack[currentLevel],
+                  nodes,
+                  edges,
+                };
+                setNavigationStack(newStack);
+
+                // Jump to clicked level
+                setCurrentLevel(index);
+                setNodes(newStack[index].nodes);
+                setEdges(newStack[index].edges);
+              }
+            }}
+            className={`hover:text-blue-500 ${
+              index === currentLevel ? "font-bold" : ""
+            }`}
+          >
+            {level.name}
+          </button>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+
+  const [navigationStack, setNavigationStack] = useState([
+    {
+      id: "top",
+      name: "Top Level",
+      nodes: [],
+      edges: [],
+    },
+  ]);
+  const [currentLevel, setCurrentLevel] = useState(0);
+  const currentSystem = navigationStack[currentLevel];
 
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
@@ -108,6 +205,7 @@ const FlowGraph = () => {
 
   const handleAddBlock = (type, position) => {
     const config = getBlockConfig(type);
+    const isHierarchical = type === "hierarchical";
     const newNode = {
       id: `${type}_${Date.now()}`,
       type: "hdlNode",
@@ -116,9 +214,30 @@ const FlowGraph = () => {
         config,
         name: "",
         params: {},
+        isHierarchical,
+        internalNodes: [],
+        internalEdges: [],
         onParameterChange: handleParameterChange,
       },
     };
+
+    // Initialize storage for hierarchical block if needed
+    if (isHierarchical) {
+      setHierarchicalBlocks(
+        (prev) =>
+          new Map(
+            prev.set(newNode.id, {
+              nodes: [],
+              edges: [],
+              ports: {
+                inputs: {},
+                outputs: {},
+              },
+            })
+          )
+      );
+    }
+
     setNodes((nodes) => [...nodes, newNode]);
   };
 
@@ -126,12 +245,41 @@ const FlowGraph = () => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nodeId) {
+          const newData = {
+            ...node.data,
+            ...updates,
+          };
+
+          // If this is a hierarchical block and ports were updated
+          if (node.data.isHierarchical && updates.ports) {
+            setHierarchicalBlocks((prev) => {
+              const blockData = prev.get(nodeId) || { nodes: [], edges: [] };
+              return new Map(
+                prev.set(nodeId, {
+                  ...blockData,
+                  ports: updates.ports,
+                })
+              );
+            });
+          }
+
+          // If internal nodes/edges were updated
+          if (updates.internalNodes || updates.internalEdges) {
+            setHierarchicalBlocks((prev) => {
+              const blockData = prev.get(nodeId) || {};
+              return new Map(
+                prev.set(nodeId, {
+                  ...blockData,
+                  nodes: updates.internalNodes || blockData.nodes || [],
+                  edges: updates.internalEdges || blockData.edges || [],
+                })
+              );
+            });
+          }
+
           return {
             ...node,
-            data: {
-              ...node.data,
-              ...updates,
-            },
+            data: newData,
           };
         }
         return node;
@@ -238,15 +386,32 @@ const FlowGraph = () => {
           node.data.config.type !== "outport"
         ) {
           const blockConfig = blockRegistry[node.data.config.type];
-          const blockModule = blockConfig.generateVerilog({
-            name: node.data.name,
-            ...node.data.params,
-          });
-          files[`${node.data.name}.sv`] = blockModule;
+
+          // Handle hierarchical blocks differently
+          if (node.data.isHierarchical) {
+            const hierarchicalData = hierarchicalBlocks.get(node.id);
+            if (hierarchicalData) {
+              const blockModule = blockConfig.generateVerilog(
+                {
+                  name: node.data.name,
+                  ...node.data.params,
+                },
+                hierarchicalData.nodes,
+                hierarchicalData.edges
+              );
+              files[`${node.data.name}.sv`] = blockModule;
+            }
+          } else {
+            // Regular block handling
+            const blockModule = blockConfig.generateVerilog({
+              name: node.data.name,
+              ...node.data.params,
+            });
+            files[`${node.data.name}.sv`] = blockModule;
+          }
         }
       });
     };
-
     files[
       `${moduleName}.sv`
     ] = `${generateModuleHeader()}\n\n${generateBlockInstances()}\n\nendmodule`;
@@ -256,8 +421,26 @@ const FlowGraph = () => {
   }, [nodes, edges, moduleName]);
 
   const handleGenerateHDL = () => {
+    // Generate new files
     const files = generateSystemVerilog();
+
+    // Clear existing states
+    setIsDrawerOpen(false);
+    setSelectedFile(null);
+
+    // Set new files and open drawer
     setGeneratedFiles(files);
+    setIsDrawerOpen(true);
+  };
+
+  // Update drawer close handler
+  const toggleFileDrawer = () => {
+    if (!isDrawerOpen) {
+      setIsDrawerOpen(true);
+    } else {
+      setIsDrawerOpen(false);
+      setSelectedFile(null);
+    }
   };
 
   return (
@@ -285,13 +468,16 @@ const FlowGraph = () => {
             </button>
           </div>
           <button
-            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            onClick={toggleFileDrawer}
             className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={Object.keys(generatedFiles).length === 0}
           >
             {isDrawerOpen ? "Close" : "Open"} File Explorer
           </button>
         </div>
+
+        <Breadcrumbs />
+
         <div className="w-full h-[calc(90vh-64px)]">
           {" "}
           {/* Adjust 64px based on your header/navbar height */}
@@ -316,6 +502,15 @@ const FlowGraph = () => {
             <Controls />
             <MiniMap />
           </ReactFlow>
+          <FileDrawer
+            isOpen={isDrawerOpen}
+            files={generatedFiles}
+            selectedFile={selectedFile}
+            onFileSelect={setSelectedFile}
+            onClose={() => {
+              toggleFileDrawer();
+            }}
+          />
         </div>
       </div>
     </div>

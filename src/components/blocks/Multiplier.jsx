@@ -1,5 +1,5 @@
 import React from "react";
-import BaseBlock from "./BaseBlock";
+import BaseBlock from "../blockHelpers/BaseBlock";
 
 export const blockConfig = {
   type: "multiplier",
