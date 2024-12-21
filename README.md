@@ -21,10 +21,9 @@ FlowHDL is an open source web-based flowgraph HDL generator inspired by tools li
   
 ## Flow is in its infancy!
 
-Please contribute if you are a web, react/vite, react flow, or HDL guru!
+Please contribute if you are a web, react/vite, react flow, or HDL guru! We need a lot of help simplifying logic, components, and how blocks are created. this was bootstrapped with a lot of help from AI (sorry, im not a web dev by day) and will need some TLC to get to a sane state. 
 
 ### Top priorities
-
 - [ ] better styling for react flow
      - [ ] highlight when wires clicks
      - [ ] better block appearance
