@@ -4,7 +4,7 @@ flow hdl is an open source web-based flowgraph HDL generator inspired by tools l
 
 <img width="1426" alt="image" src="https://github.com/user-attachments/assets/132b4761-7b5d-4200-99e4-01feb3d161c8" />
 
-## What it can do
+## What it can do 
 - create simple HDL from predfined user blocks
 - do some very crude error checking (sign/bitwidth matching on source and destinations)
 
