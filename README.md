@@ -45,11 +45,6 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
 - [ ] hierarchy needs added, you should be able to create subsystems like in simulink. i.e. flowgraphs within flowgraphs
 ## [DEMO](https://flow-hdl.netlify.app)
 
-## get started with dev
-
-1. clone
-2. `npm i`
-3. `npm run dev`
 
 # Concept
 
@@ -67,8 +62,12 @@ Blocks are located in `/components/blocks/`. users define the interface and the 
 First time contributors should:
 
 1. Fork the repository
-2. Set up the development environment (provide specific steps for your project)
-3. Create a new branch for your work: git checkout -b feature/your-feature-name
+2. Set up the development environment
+  - get started with dev
+    1. clone
+    2. `npm i`
+    3. `npm run dev`
+4. Create a new branch for your work from the develop branch: git checkout -b feature/your-feature-name
 
 ## PR Title and Description Format
 ```
