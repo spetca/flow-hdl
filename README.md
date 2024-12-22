@@ -1,6 +1,8 @@
 # flow hdl
 
-flow hdl is an open source web-based flowgraph HDL generator inspired by tools like Simulink HDL Coder and GNU Radio.
+flow hdl is an open source web-based flowgraph HDL generator inspired by tools like Simulink HDL Coder and GNU Radio. flow graphs can easily be exported and imported via a common json structure.  
+
+The first goal of the project is to generate decent system verilog from complex hierarchical flowgraphs. 
 
 <img width="1429" alt="image" src="https://github.com/user-attachments/assets/59273d91-ff1b-4c2c-81aa-b9a7ed7fa1aa" />
 
