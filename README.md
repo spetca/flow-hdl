@@ -2,7 +2,7 @@
 
 flow hdl is an open source web-based flowgraph HDL generator inspired by tools like Simulink HDL Coder and GNU Radio.
 
-<img width="1426" alt="image" src="https://github.com/user-attachments/assets/132b4761-7b5d-4200-99e4-01feb3d161c8" />
+<img width="1429" alt="image" src="https://github.com/user-attachments/assets/59273d91-ff1b-4c2c-81aa-b9a7ed7fa1aa" />
 
 ## What it can do 
 - create simple HDL from predfined user blocks
