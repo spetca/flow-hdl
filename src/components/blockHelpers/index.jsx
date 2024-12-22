@@ -6,6 +6,8 @@ import MultiplierBlock, {
   blockConfig as multiplierConfig,
   generateVerilog as multiplierVerilog,
 } from "../blocks/Multiplier";
+import InPortBlock, { blockConfig as inportConfig } from "../blocks/InPort";
+import OutPortBlock, { blockConfig as outportConfig } from "../blocks/OutPort";
 import HierarchicalBlock from "./HierarchicalBlockEditor";
 import HDLNode from "./HDLNode";
 import BlockDialog from "./BlockDialog";
@@ -20,64 +22,15 @@ export const BlockTypes = {
 
 // Registry of all available blocks
 export const blockRegistry = {
-  subsystem: {
-    type: BlockTypes.SUBSYSTEM,
-    component: HDLNode,
-    config: {
-      type: "subsystem",
-      name: "Subsystem",
-      description: "Create a nested block with its own internal components",
-      ports: {
-        inputs: {},
-        outputs: {},
-      },
-      params: {
-        name: { type: "string", default: "subsystem" },
-      },
-    },
-    generateVerilog: (params, nodes, edges) => {
-      const generator = new VerilogGenerator();
-      return generator.generateModuleVerilog(params.name, nodes, edges);
-    },
-  },
   inport: {
     type: BlockTypes.INPORT,
-    component: HDLNode,
-    config: {
-      type: "inport",
-      name: "Input Port",
-      description: "Input port for HDL module",
-      ports: {
-        inputs: {}, // No inputs
-        outputs: {
-          out: { width: 32, signed: false },
-        },
-      },
-      params: {
-        width: { type: "number", default: 32 },
-        signed: { type: "boolean", default: false },
-      },
-    },
+    component: InPortBlock,
+    config: inportConfig,
   },
-
   outport: {
     type: BlockTypes.OUTPORT,
-    component: HDLNode,
-    config: {
-      type: "outport",
-      name: "Output Port",
-      description: "Output port for HDL module",
-      ports: {
-        inputs: {
-          in: { width: 32, signed: false },
-        },
-        outputs: {}, // No outputs
-      },
-      params: {
-        width: { type: "number", default: 32 },
-        signed: { type: "boolean", default: false },
-      },
-    },
+    component: OutPortBlock,
+    config: outportConfig,
   },
   adder: {
     type: BlockTypes.PRIMITIVE,
@@ -90,29 +43,6 @@ export const blockRegistry = {
     component: MultiplierBlock,
     config: multiplierConfig,
     generateVerilog: multiplierVerilog,
-  },
-  hierarchical: {
-    type: BlockTypes.HIERARCHICAL,
-    component: HierarchicalBlock,
-    config: {
-      name: "Hierarchical Block",
-      description: "Create a nested block with its own internal components",
-      ports: {
-        inputs: {},
-        outputs: {},
-      },
-      params: {
-        name: { type: "string", default: "nested_block" },
-      },
-    },
-    generateVerilog: (params, internalNodes, internalEdges) => {
-      const generator = new VerilogGenerator();
-      return generator.generateModuleVerilog(
-        params.name,
-        internalNodes,
-        internalEdges
-      );
-    },
   },
 };
 

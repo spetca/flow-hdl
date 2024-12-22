@@ -13,8 +13,7 @@ import "reactflow/dist/style.css";
 import { getBlockConfig, blockRegistry } from "./blockHelpers";
 import HDLNode from "./blockHelpers/HDLNode";
 import FileDrawer from "./FileDrawer";
-import FileExplorer from "./FileExplorer";
-import SystemVerilogGenerator from "./generators/SystemVerilogGenerator";
+import SystemVerilogGenerator from "../lib/SystemVerilogGenerator";
 
 import "@xyflow/react/dist/style.css";
 

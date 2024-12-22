@@ -19,6 +19,7 @@ const HDLNode = ({ data, id, selected }) => {
         return "bg-purple-500";
     }
   };
+
   // Update local state when data changes
   useEffect(() => {
     setCurrentConfig(config);
@@ -33,8 +34,8 @@ const HDLNode = ({ data, id, selected }) => {
         const dy = e.movementY;
 
         setNodeSize((prev) => ({
-          width: Math.max(200, prev.width + dx), // Minimum width
-          height: Math.max(150, prev.height + dy), // Minimum height
+          width: Math.max(200, prev.width + dx),
+          height: Math.max(150, prev.height + dy),
         }));
       }
     };
@@ -94,10 +95,9 @@ const HDLNode = ({ data, id, selected }) => {
 
   // Calculate port positions with even distribution and spacing
   const calculatePortPosition = (index, total) => {
-    if (total === 1) return 0.5; // Center if only one port
-    if (total === 2) return index === 0 ? 0.3 : 0.7; // 30% and 70% for two ports
-    // For more than 2 ports, distribute evenly with padding
-    const padding = 0.15; // 15% padding from top and bottom
+    if (total === 1) return 0.5;
+    if (total === 2) return index === 0 ? 0.3 : 0.7;
+    const padding = 0.15;
     const usableSpace = 1 - 2 * padding;
     return padding + index * (usableSpace / (total - 1));
   };
@@ -107,6 +107,14 @@ const HDLNode = ({ data, id, selected }) => {
     return Object.entries(currentConfig.params)
       .map(([name, param]) => `${name}: ${param.default}`)
       .join(", ");
+  };
+
+  // Helper to get port display values
+  const getPortDisplayValues = (port) => {
+    // Handle both old direct properties and new nested structure
+    const width = port.width?.default || port.width || 32;
+    const signed = port.signed?.default || port.signed || false;
+    return { width, signed };
   };
 
   const inputPorts = Object.entries(currentConfig.ports.inputs || {});
@@ -140,52 +148,62 @@ const HDLNode = ({ data, id, selected }) => {
           )}
 
         {/* Input Ports */}
-        {inputPorts.map(([portId, port], index) => (
-          <div
-            key={`input-${portId}`}
-            className="absolute left-0 transform -translate-y-1/2 flex items-center group"
-            style={{
-              top: `${calculatePortPosition(index, inputPorts.length) * 100}%`,
-              maxWidth: "45%",
-            }}
-          >
-            <Handle
-              type="target"
-              position={Position.Left}
-              id={portId}
-              className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
-              style={{ left: -8 }}
-            />
-            <span className="text-sm ml-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
-              {portId} [{port.width - 1}:0]
-              {port.signed && <span className="text-gray-400 ml-1">(s)</span>}
-            </span>
-          </div>
-        ))}
+        {inputPorts.map(([portId, port], index) => {
+          const { width, signed } = getPortDisplayValues(port);
+          return (
+            <div
+              key={`input-${portId}`}
+              className="absolute left-0 transform -translate-y-1/2 flex items-center group"
+              style={{
+                top: `${
+                  calculatePortPosition(index, inputPorts.length) * 100
+                }%`,
+                maxWidth: "45%",
+              }}
+            >
+              <Handle
+                type="target"
+                position={Position.Left}
+                id={portId}
+                className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
+                style={{ left: -8 }}
+              />
+              <span className="text-sm ml-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
+                {portId} [{width - 1}:0]
+                {signed && <span className="text-gray-400 ml-1">(s)</span>}
+              </span>
+            </div>
+          );
+        })}
 
         {/* Output Ports */}
-        {outputPorts.map(([portId, port], index) => (
-          <div
-            key={`output-${portId}`}
-            className="absolute right-0 transform -translate-y-1/2 flex items-center justify-end group"
-            style={{
-              top: `${calculatePortPosition(index, outputPorts.length) * 100}%`,
-              maxWidth: "45%",
-            }}
-          >
-            <span className="text-sm mr-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
-              {portId} [{port.width - 1}:0]
-              {port.signed && <span className="text-gray-400 ml-1">(s)</span>}
-            </span>
-            <Handle
-              type="source"
-              position={Position.Right}
-              id={portId}
-              className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
-              style={{ right: -8 }}
-            />
-          </div>
-        ))}
+        {outputPorts.map(([portId, port], index) => {
+          const { width, signed } = getPortDisplayValues(port);
+          return (
+            <div
+              key={`output-${portId}`}
+              className="absolute right-0 transform -translate-y-1/2 flex items-center justify-end group"
+              style={{
+                top: `${
+                  calculatePortPosition(index, outputPorts.length) * 100
+                }%`,
+                maxWidth: "45%",
+              }}
+            >
+              <span className="text-sm mr-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
+                {portId} [{width - 1}:0]
+                {signed && <span className="text-gray-400 ml-1">(s)</span>}
+              </span>
+              <Handle
+                type="source"
+                position={Position.Right}
+                id={portId}
+                className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
+                style={{ right: -8 }}
+              />
+            </div>
+          );
+        })}
 
         {/* Resize Handle */}
         <div
@@ -201,7 +219,6 @@ const HDLNode = ({ data, id, selected }) => {
         />
       </div>
 
-      {/* Keep your existing BlockDialog */}
       {isConfigOpen && (
         <BlockDialog
           block={{ id, name: data.name, params: data.params }}

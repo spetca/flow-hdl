@@ -3,15 +3,34 @@ import { createPortal } from "react-dom";
 
 const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
   const [blockName, setBlockName] = useState(block.name || ""); // Initialize with block.name
-  const [portConfig, setPortConfig] = useState({
-    inputs: { ...config.ports.inputs },
-    outputs: { ...config.ports.outputs },
-  });
+
   const [paramConfig, setParamConfig] = useState({
     ...config.params,
   });
 
   const dialogRef = useRef(null);
+
+  // Fixed port config initialization
+  const [portConfig, setPortConfig] = useState({
+    inputs: Object.fromEntries(
+      Object.entries(config.ports.inputs || {}).map(([name, port]) => [
+        name,
+        {
+          width: port.width.default,
+          signed: port.signed.default, // Access default values from config
+        },
+      ])
+    ),
+    outputs: Object.fromEntries(
+      Object.entries(config.ports.outputs || {}).map(([name, port]) => [
+        name,
+        {
+          width: port.width.default,
+          signed: port.signed.default, // Access default values from config
+        },
+      ])
+    ),
+  });
 
   // Update local state when props change
   useEffect(() => {
@@ -49,20 +68,27 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
   };
 
   const handleSave = () => {
-    // Prepare updates with name, port and parameter configurations
+    // Prepare updates with name and port configurations
     const updates = {
       ports: portConfig,
-      params: Object.fromEntries(
-        Object.entries(paramConfig).map(([key, value]) => [key, value.default])
-      ),
-      name: blockName || config.name, // Use blockName if set, fallback to config.name
+      name: blockName || config.name,
     };
+
+    // Only include params if they exist in config
+    if (Object.keys(config.params || {}).length > 0) {
+      updates.params = Object.fromEntries(
+        Object.entries(paramConfig).map(([key, value]) => [key, value.default])
+      );
+    }
 
     onUpdate(updates);
     onClose();
   };
 
   if (!isOpen) return null;
+
+  // Check if this is a port-only block (inport/outport)
+  const isPortOnlyBlock = ["inport", "outport"].includes(config.type);
 
   return createPortal(
     <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -101,7 +127,7 @@ const BlockDialog = ({ block, config, isOpen, onClose, onUpdate }) => {
         {/* Content */}
         <div className="px-6 py-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           {/* Parameters Section */}
-          {Object.keys(config.params || {}).length > 0 && (
+          {!isPortOnlyBlock && Object.keys(config.params || {}).length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3">Parameters</h3>
               <div className="space-y-3">

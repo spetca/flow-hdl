@@ -66,7 +66,6 @@ export default AdderBlock;
 src/
 ├── components/
 │   ├── blockHelpers/
-│   │   ├── BaseBlock.jsx          # Existing - Base block functionality
 │   │   ├── BlockDialog.jsx        # Existing - Block configuration dialog
 │   │   ├── HDLNode.jsx           # Existing - Visual node representation
 │   │   ├── HierarchicalBlock.jsx  # New - Handles nested flow graphs

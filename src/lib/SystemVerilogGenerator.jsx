@@ -1,4 +1,4 @@
-import { blockRegistry } from "../blockHelpers";
+import { blockRegistry } from "../components/blockHelpers";
 
 class SystemVerilogGenerator {
   constructor(nodes, edges, moduleName, hierarchicalBlocks) {
