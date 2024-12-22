@@ -4,6 +4,8 @@ flow hdl is an open source web-based flowgraph HDL generator inspired by tools l
 
 The first goal of the project is to generate decent system verilog from complex hierarchical flowgraphs. 
 
+flow is in its **infancy** and any contribution is greatly appreciated - check out [how to contribute](#how-to-contribute)
+
 <img width="1429" alt="image" src="https://github.com/user-attachments/assets/59273d91-ff1b-4c2c-81aa-b9a7ed7fa1aa" />
 
 ## What it can do 
@@ -58,6 +60,51 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
 # How to add functional blocks
 
 Blocks are located in `/components/blocks/`. users define the interface and the underlying hdl. See `/components/blocks/adder` for a good example
+
+
+# Contributing Guide
+
+First time contributors should:
+
+1. Fork the repository
+2. Set up the development environment (provide specific steps for your project)
+3. Create a new branch for your work: git checkout -b feature/your-feature-name
+
+## PR Title and Description Format
+```
+Title: Start with type of change (feat/fix/docs/refactor) followed by concise description
+Description template:
+
+markdownCopy## What does this PR do?
+[Concise explanation]
+
+## Related Issue
+[Link to GitHub issue if applicable]
+
+## Changes Made
+[Key changes and rationale]
+
+## Screenshots (if applicable)
+[Any relevant screenshots]
+PR Review Flow
+
+Maintainers will review PRs in order of submission
+Address review comments promptly
+Squash commits before merging
+PRs require at least one approving review before merge
+```
+## Branch Organization
+
+- main - production-ready code
+- develop - integration branch for features
+- Feature branches: feature/feature-name
+
+## Issue Labels
+
+- bug - confirmed bugs
+- enhancement - new features
+- documentation - docs improvements
+- help wanted - extra attention needed
 
 # Structure 
 This is only here so i can continually explain my project layout to AI. 
