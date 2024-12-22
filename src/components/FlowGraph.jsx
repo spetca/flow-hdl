@@ -48,6 +48,12 @@ const FlowGraph = () => {
                   type: "inport",
                   name: "Input Port",
                   description: "Input port for HDL module",
+                  shape: {
+                    type: "oval",
+                    width: 120,
+                    height: 80,
+                    lockAspectRatio: true,
+                  },
                   ports: {
                     inputs: {},
                     outputs: {
@@ -151,6 +157,12 @@ const FlowGraph = () => {
                   type: "outport",
                   name: "Output Port",
                   description: "Output port for HDL module",
+                  shape: {
+                    type: "oval",
+                    width: 120,
+                    height: 80,
+                    lockAspectRatio: true,
+                  },
                   ports: {
                     inputs: {
                       in: {

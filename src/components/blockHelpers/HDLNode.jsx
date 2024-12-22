@@ -6,8 +6,56 @@ const HDLNode = ({ data, id, selected }) => {
   const { config, onParameterChange } = data;
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [currentConfig, setCurrentConfig] = useState(config);
-  const [nodeSize, setNodeSize] = useState({ width: 200, height: 150 });
+  const [nodeSize, setNodeSize] = useState(() => {
+    // Initialize size based on shape config or default
+    if (config.shape) {
+      return {
+        width: config.shape.width || 200,
+        height: config.shape.height || 150,
+      };
+    }
+    return { width: 200, height: 150 };
+  });
   const [isResizing, setIsResizing] = useState(false);
+
+  // Get shape-specific styles
+  const getShapeStyles = () => {
+    const baseStyles = {
+      width: nodeSize.width,
+      height: nodeSize.height,
+    };
+
+    if (!currentConfig.shape) {
+      return {
+        ...baseStyles,
+        borderRadius: "0.5rem", // default rounded rectangle
+      };
+    }
+
+    switch (currentConfig.shape.type) {
+      case "oval":
+        return {
+          ...baseStyles,
+          borderRadius: "50%",
+        };
+      case "rounded":
+        return {
+          ...baseStyles,
+          borderRadius: "1rem",
+        };
+      case "diamond":
+        return {
+          ...baseStyles,
+          transform: "rotate(45deg)",
+          margin: `${nodeSize.height / 4}px`,
+        };
+      default:
+        return {
+          ...baseStyles,
+          borderRadius: "0.5rem",
+        };
+    }
+  };
 
   const getNodeColor = () => {
     switch (currentConfig.type) {
@@ -23,12 +71,18 @@ const HDLNode = ({ data, id, selected }) => {
   // Update local state when data changes
   useEffect(() => {
     setCurrentConfig(config);
+    if (config.shape) {
+      setNodeSize({
+        width: config.shape.width || 200,
+        height: config.shape.height || 150,
+      });
+    }
   }, [config]);
 
   // Handle resize mouse events
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (isResizing) {
+      if (isResizing && !currentConfig.shape?.lockAspectRatio) {
         e.preventDefault();
         const dx = e.movementX;
         const dy = e.movementY;
@@ -55,7 +109,7 @@ const HDLNode = ({ data, id, selected }) => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isResizing]);
+  }, [isResizing, currentConfig.shape]);
 
   const handleDoubleClick = (e) => {
     e.preventDefault();
@@ -111,54 +165,30 @@ const HDLNode = ({ data, id, selected }) => {
 
   // Helper to get port display values
   const getPortDisplayValues = (port) => {
-    // Handle both old direct properties and new nested structure
     const width = port.width?.default || port.width || 32;
     const signed = port.signed?.default || port.signed || false;
     return { width, signed };
   };
 
-  const inputPorts = Object.entries(currentConfig.ports.inputs || {});
-  const outputPorts = Object.entries(currentConfig.ports.outputs || {});
+  const renderPorts = () => {
+    const inputPorts = Object.entries(currentConfig.ports.inputs || {});
+    const outputPorts = Object.entries(currentConfig.ports.outputs || {});
+    const isSpecialShape = currentConfig.shape?.type === "oval";
 
-  return (
-    <>
-      <div
-        className={`relative bg-white rounded-lg shadow-lg transition-shadow duration-200 ${
-          selected ? "ring-2 ring-blue-400 shadow-xl" : "ring-1 ring-gray-200"
-        }`}
-        style={{
-          width: nodeSize.width,
-          height: nodeSize.height,
-        }}
-        onDoubleClick={handleDoubleClick}
-      >
-        {/* Title Bar */}
-        <div
-          className={`text-center font-bold py-2 px-3 rounded-t-lg text-white ${getNodeColor()}`}
-        >
-          {data.name || currentConfig.name}
-        </div>
-
-        {/* Parameters Section */}
-        {currentConfig.params &&
-          Object.keys(currentConfig.params).length > 0 && (
-            <div className="text-xs bg-gray-50 px-3 py-2 text-gray-600 border-b border-gray-200">
-              {renderParameters()}
-            </div>
-          )}
-
+    return (
+      <>
         {/* Input Ports */}
         {inputPorts.map(([portId, port], index) => {
           const { width, signed } = getPortDisplayValues(port);
+          const position = calculatePortPosition(index, inputPorts.length);
           return (
             <div
               key={`input-${portId}`}
               className="absolute left-0 transform -translate-y-1/2 flex items-center group"
               style={{
-                top: `${
-                  calculatePortPosition(index, inputPorts.length) * 100
-                }%`,
+                top: `${position * 100}%`,
                 maxWidth: "45%",
+                zIndex: 1,
               }}
             >
               <Handle
@@ -166,12 +196,14 @@ const HDLNode = ({ data, id, selected }) => {
                 position={Position.Left}
                 id={portId}
                 className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
-                style={{ left: -8 }}
+                style={{ left: isSpecialShape ? -6 : -8 }}
               />
-              <span className="text-sm ml-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
-                {portId} [{width - 1}:0]
-                {signed && <span className="text-gray-400 ml-1">(s)</span>}
-              </span>
+              {!isSpecialShape && (
+                <span className="text-sm ml-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {portId} [{width - 1}:0]
+                  {signed && <span className="text-gray-400 ml-1">(s)</span>}
+                </span>
+              )}
             </div>
           );
         })}
@@ -179,44 +211,109 @@ const HDLNode = ({ data, id, selected }) => {
         {/* Output Ports */}
         {outputPorts.map(([portId, port], index) => {
           const { width, signed } = getPortDisplayValues(port);
+          const position = calculatePortPosition(index, outputPorts.length);
           return (
             <div
               key={`output-${portId}`}
               className="absolute right-0 transform -translate-y-1/2 flex items-center justify-end group"
               style={{
-                top: `${
-                  calculatePortPosition(index, outputPorts.length) * 100
-                }%`,
+                top: `${position * 100}%`,
                 maxWidth: "45%",
+                zIndex: 1,
               }}
             >
-              <span className="text-sm mr-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
-                {portId} [{width - 1}:0]
-                {signed && <span className="text-gray-400 ml-1">(s)</span>}
-              </span>
+              {!isSpecialShape && (
+                <span className="text-sm mr-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {portId} [{width - 1}:0]
+                  {signed && <span className="text-gray-400 ml-1">(s)</span>}
+                </span>
+              )}
               <Handle
                 type="source"
                 position={Position.Right}
                 id={portId}
                 className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
-                style={{ right: -8 }}
+                style={{ right: isSpecialShape ? -6 : -8 }}
               />
             </div>
           );
         })}
+      </>
+    );
+  };
 
-        {/* Resize Handle */}
+  const shapeStyles = getShapeStyles();
+  const isSpecialShape = currentConfig.shape?.type !== undefined;
+
+  return (
+    <>
+      <div
+        className={`relative bg-white shadow-lg transition-shadow duration-200 ${
+          selected ? "ring-2 ring-blue-400 shadow-xl" : "ring-1 ring-gray-200"
+        }`}
+        style={shapeStyles}
+        onDoubleClick={handleDoubleClick}
+      >
+        {/* Title Bar */}
         <div
-          className={`absolute bottom-0 right-0 w-4 h-4 cursor-se-resize transition-colors ${
-            selected ? "bg-blue-400" : "bg-gray-300"
+          className={`text-center text-white ${getNodeColor()} ${
+            isSpecialShape
+              ? "h-full flex flex-col items-center justify-center"
+              : "rounded-t-lg py-2 px-3 font-bold"
           }`}
-          onMouseDown={handleResizeStart}
-          style={{
-            borderTopLeftRadius: "4px",
-            borderTop: `2px solid ${selected ? "#3b82f6" : "#9ca3af"}`,
-            borderLeft: `2px solid ${selected ? "#3b82f6" : "#9ca3af"}`,
-          }}
-        />
+          style={isSpecialShape ? shapeStyles : undefined}
+        >
+          <div className="font-bold">{data.name || currentConfig.name}</div>
+          {isSpecialShape &&
+            Object.entries(currentConfig.ports.inputs || {}).map(
+              ([portId, port]) => {
+                const { width, signed } = getPortDisplayValues(port);
+                return (
+                  <div key={portId} className="text-sm mt-1">
+                    [{width - 1}:0]{signed && "(s)"}
+                  </div>
+                );
+              }
+            )}
+          {isSpecialShape &&
+            Object.entries(currentConfig.ports.outputs || {}).map(
+              ([portId, port]) => {
+                const { width, signed } = getPortDisplayValues(port);
+                return (
+                  <div key={portId} className="text-sm mt-1">
+                    [{width - 1}:0]{signed && "(s)"}
+                  </div>
+                );
+              }
+            )}
+        </div>
+
+        {/* Parameters Section - Only show for regular blocks */}
+        {!isSpecialShape &&
+          currentConfig.params &&
+          Object.keys(currentConfig.params).length > 0 && (
+            <div className="text-xs bg-gray-50 px-3 py-2 text-gray-600 border-b border-gray-200">
+              {renderParameters()}
+            </div>
+          )}
+
+        {/* Ports */}
+        {renderPorts()}
+
+        {/* Resize Handle - Only show for regular blocks */}
+        {!currentConfig.shape?.lockAspectRatio && (
+          <div
+            className={`absolute bottom-0 right-0 w-4 h-4 cursor-se-resize transition-colors ${
+              selected ? "bg-blue-400" : "bg-gray-300"
+            }`}
+            onMouseDown={handleResizeStart}
+            style={{
+              borderTopLeftRadius: "4px",
+              borderTop: `2px solid ${selected ? "#3b82f6" : "#9ca3af"}`,
+              borderLeft: `2px solid ${selected ? "#3b82f6" : "#9ca3af"}`,
+            }}
+          />
+        )}
       </div>
 
       {isConfigOpen && (

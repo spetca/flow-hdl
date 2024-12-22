@@ -6,6 +6,12 @@ const blockConfig = {
   type: "outport",
   name: "Output Port",
   description: "Output port for HDL module",
+  shape: {
+    type: "oval",
+    width: 120,
+    height: 80,
+    lockAspectRatio: true,
+  },
   ports: {
     inputs: {
       in: {
