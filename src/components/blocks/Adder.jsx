@@ -94,9 +94,9 @@ const generateVerilog = (params) => {
     // Block parameters
     parameter DELAY_OUT = ${delay}
 )(
+    input wire clk,  // Clock signal defined in block
     input wire ${portA.signed ? "signed " : ""}[A_WIDTH-1:0] a,
     input wire ${portB.signed ? "signed " : ""}[B_WIDTH-1:0] b,
-    input wire clk,  // Clock signal defined in block
     output reg ${portSum.signed ? "signed " : ""}[SUM_WIDTH-1:0] sum
 );
 
@@ -107,9 +107,7 @@ const generateVerilog = (params) => {
     generate
         if (DELAY_OUT == 0) begin
             // Direct assignment for zero delay
-            always @(posedge clk) begin
-                sum <= a + b;
-            end
+            assign  sum = a + b;
         end else begin
             integer i;
             always @(posedge clk) begin

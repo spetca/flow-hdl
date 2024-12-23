@@ -1,45 +1,52 @@
-// FileDrawer.jsx
 import React from "react";
-import FileExplorer from "./FileExplorer";
-import FileEditor from "./FileEditor";
+import Editor from "@monaco-editor/react";
 
 const FileDrawer = ({ isOpen, files, selectedFile, onFileSelect, onClose }) => {
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 right-0 bottom-0 w-1/2 bg-white shadow-lg flex flex-col h-screen">
-      {/* Header - Fixed height */}
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold">Generated Files</h2>
-          <button
-            onClick={onClose}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-          >
-            Close
-          </button>
-        </div>
+    <div className="fixed top-0 right-0 bottom-0 w-1/2 bg-white shadow-lg flex flex-col">
+      <div className="p-4 border-b flex items-center justify-between gap-4">
+        <h2 className="font-bold">Generated Files</h2>
+        <select
+          className="flex-1 p-2 border rounded"
+          value={selectedFile?.name || ""}
+          onChange={(e) => {
+            const name = e.target.value;
+            if (name) onFileSelect({ name, content: files[name] });
+          }}
+        >
+          <option value="">Select a file...</option>
+          {Object.entries(files).map(([name]) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={onClose}
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Close
+        </button>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex flex-col flex-grow overflow-hidden">
-        {/* File Explorer - Fixed height */}
-        <div className="p-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-md font-semibold mb-2">Files</h2>
-          <FileExplorer files={files} onFileSelect={onFileSelect} />
-        </div>
-
-        {/* Editor Section - Takes remaining space */}
-        <div className="flex-grow overflow-hidden p-4 flex flex-col">
-          <h2 className="text-md font-semibold mb-2 flex-shrink-0">
-            File Content
-          </h2>
-          <div className="flex-grow overflow-hidden">
-            <FileEditor file={selectedFile} />
-          </div>
-        </div>
+      <div className="flex-1 overflow-hidden">
+        {selectedFile ? (
+          <Editor
+            height="100%"
+            language="verilog"
+            theme="vs-dark"
+            value={selectedFile.content}
+            options={{
+              readOnly: true,
+              minimap: { enabled: true },
+              scrollBeyondLastLine: false,
+            }}
+          />
+        ) : (
+          <div className="p-4">Select a file to view</div>
+        )}
       </div>
     </div>
   );

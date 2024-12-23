@@ -8,14 +8,16 @@ import MultiplierBlock, {
 } from "../blocks/Multiplier";
 import InPortBlock, { blockConfig as inportConfig } from "../blocks/InPort";
 import OutPortBlock, { blockConfig as outportConfig } from "../blocks/OutPort";
-import HierarchicalBlock from "./HierarchicalBlockEditor";
+import DelayBlock, {
+  blockConfig as delayConfig,
+  generateVerilog as delayVerilog,
+} from "../blocks/Delay";
 import HDLNode from "./HDLNode";
-import BlockDialog from "./BlockDialog";
+import BlockConfiguration from "./BlockConfiguration";
 
 // Block type constants
 export const BlockTypes = {
   PRIMITIVE: "primitive",
-  HIERARCHICAL: "hierarchical",
   INPORT: "inport",
   OUTPORT: "outport",
 };
@@ -31,6 +33,12 @@ export const blockRegistry = {
     type: BlockTypes.OUTPORT,
     component: OutPortBlock,
     config: outportConfig,
+  },
+  delay: {
+    type: BlockTypes.PRIMITIVE,
+    component: DelayBlock,
+    config: delayConfig,
+    generateVerilog: delayVerilog,
   },
   adder: {
     type: BlockTypes.PRIMITIVE,
@@ -76,19 +84,11 @@ export const generateBlockVerilog = (
   const block = blockRegistry[type];
   if (!block) return null;
 
-  if (block.type === BlockTypes.HIERARCHICAL) {
-    return block.generateVerilog(params, internalNodes, internalEdges);
-  }
   return block.generateVerilog(params);
 };
 
-// Helper to check if block is hierarchical
-export const isHierarchicalBlock = (type) => {
-  return blockRegistry[type]?.type === BlockTypes.HIERARCHICAL;
-};
-
 // Export all components and utilities
-export { HierarchicalBlock, HDLNode, BlockDialog };
+export { HDLNode, BlockConfiguration };
 
 // Create a new VerilogGenerator instance for the entire design
 export const createVerilogGenerator = () => {

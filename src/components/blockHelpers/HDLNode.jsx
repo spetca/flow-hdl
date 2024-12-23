@@ -1,13 +1,12 @@
 import React, { memo, useState, useEffect } from "react";
 import { Handle, Position } from "reactflow";
-import BlockDialog from "./BlockDialog";
+import BlockConfiguration from "./BlockConfiguration";
 
 const HDLNode = ({ data, id, selected }) => {
   const { config, onParameterChange } = data;
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [currentConfig, setCurrentConfig] = useState(config);
   const [nodeSize, setNodeSize] = useState(() => {
-    // Initialize size based on shape config or default
     if (config.shape) {
       return {
         width: config.shape.width || 200,
@@ -16,7 +15,6 @@ const HDLNode = ({ data, id, selected }) => {
     }
     return { width: 200, height: 150 };
   });
-  const [isResizing, setIsResizing] = useState(false);
 
   // Get shape-specific styles
   const getShapeStyles = () => {
@@ -28,7 +26,7 @@ const HDLNode = ({ data, id, selected }) => {
     if (!currentConfig.shape) {
       return {
         ...baseStyles,
-        borderRadius: "0.5rem", // default rounded rectangle
+        borderRadius: "0.5rem",
       };
     }
 
@@ -36,7 +34,9 @@ const HDLNode = ({ data, id, selected }) => {
       case "oval":
         return {
           ...baseStyles,
-          borderRadius: "50%",
+          width: 75,
+          height: 65,
+          borderRadius: "25%",
         };
       case "rounded":
         return {
@@ -68,21 +68,10 @@ const HDLNode = ({ data, id, selected }) => {
     }
   };
 
-  // Update local state when data changes
-  useEffect(() => {
-    setCurrentConfig(config);
-    if (config.shape) {
-      setNodeSize({
-        width: config.shape.width || 200,
-        height: config.shape.height || 150,
-      });
-    }
-  }, [config]);
-
   // Handle resize mouse events
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (isResizing && !currentConfig.shape?.lockAspectRatio) {
+      if (!currentConfig.shape?.lockAspectRatio) {
         e.preventDefault();
         const dx = e.movementX;
         const dy = e.movementY;
@@ -94,32 +83,14 @@ const HDLNode = ({ data, id, selected }) => {
       }
     };
 
-    const handleMouseUp = () => {
-      if (isResizing) {
-        setIsResizing(false);
-      }
-    };
-
-    if (isResizing) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    }
-
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isResizing, currentConfig.shape]);
+  }, [currentConfig.shape]);
 
   const handleDoubleClick = (e) => {
     e.preventDefault();
     setIsConfigOpen(true);
-  };
-
-  const handleResizeStart = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsResizing(true);
   };
 
   const handleUpdate = (updates) => {
@@ -156,11 +127,27 @@ const HDLNode = ({ data, id, selected }) => {
     return padding + index * (usableSpace / (total - 1));
   };
 
-  const renderParameters = () => {
+  // Get the main parameter value for center display
+  const getMainParameter = () => {
     if (!currentConfig.params) return null;
-    return Object.entries(currentConfig.params)
-      .map(([name, param]) => `${name}: ${param.default}`)
-      .join(", ");
+
+    // Priority parameters by block type
+    const paramMap = {
+      delay: "DELAY",
+      adder: "DELAY_OUT",
+      // Add more block types and their main parameters here
+    };
+
+    const mainParamKey = paramMap[currentConfig.type];
+    if (!mainParamKey) return null;
+
+    const param = currentConfig.params[mainParamKey];
+    if (!param) return null;
+
+    return {
+      name: mainParamKey,
+      value: param.default,
+    };
   };
 
   // Helper to get port display values
@@ -244,6 +231,7 @@ const HDLNode = ({ data, id, selected }) => {
 
   const shapeStyles = getShapeStyles();
   const isSpecialShape = currentConfig.shape?.type !== undefined;
+  const mainParam = getMainParameter();
 
   return (
     <>
@@ -275,51 +263,35 @@ const HDLNode = ({ data, id, selected }) => {
                 );
               }
             )}
-          {isSpecialShape &&
-            Object.entries(currentConfig.ports.outputs || {}).map(
-              ([portId, port]) => {
-                const { width, signed } = getPortDisplayValues(port);
-                return (
-                  <div key={portId} className="text-sm mt-1">
-                    [{width - 1}:0]{signed && "(s)"}
-                  </div>
-                );
-              }
-            )}
         </div>
+
+        {/* Main Parameter Display */}
+        {!isSpecialShape && mainParam && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-2xl font-bold text-gray-500">
+              {mainParam.value}
+            </div>
+          </div>
+        )}
 
         {/* Parameters Section - Only show for regular blocks */}
         {!isSpecialShape &&
           currentConfig.params &&
           Object.keys(currentConfig.params).length > 0 && (
-            <div className="text-xs bg-gray-50 px-3 py-2 text-gray-600 border-b border-gray-200">
-              {renderParameters()}
+            <div className="text-xs bg-gray-50 px-3 py-1 text-gray-600 border-b border-gray-200">
+              {Object.entries(currentConfig.params)
+                .map(([name, param]) => `${name}: ${param.default}`)
+                .join(", ")}
             </div>
           )}
 
         {/* Ports */}
         {renderPorts()}
-
-        {/* Resize Handle - Only show for regular blocks */}
-        {!currentConfig.shape?.lockAspectRatio && (
-          <div
-            className={`absolute bottom-0 right-0 w-4 h-4 cursor-se-resize transition-colors ${
-              selected ? "bg-blue-400" : "bg-gray-300"
-            }`}
-            onMouseDown={handleResizeStart}
-            style={{
-              borderTopLeftRadius: "4px",
-              borderTop: `2px solid ${selected ? "#3b82f6" : "#9ca3af"}`,
-              borderLeft: `2px solid ${selected ? "#3b82f6" : "#9ca3af"}`,
-            }}
-          />
-        )}
       </div>
 
       {isConfigOpen && (
-        <BlockDialog
-          block={{ id, name: data.name, params: data.params }}
-          config={currentConfig}
+        <BlockConfiguration
+          data={{ config: currentConfig, name: data.name }}
           isOpen={isConfigOpen}
           onClose={() => setIsConfigOpen(false)}
           onUpdate={handleUpdate}

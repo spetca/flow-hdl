@@ -112,18 +112,19 @@ This is only here so i can continually explain my project layout to AI.
 src/
 ├── components/
 │   ├── blockHelpers/
-│   │   ├── BlockDialog.jsx        # Existing - Block configuration dialog
-│   │   ├── HDLNode.jsx           # Existing - Visual node representation
-│   │   ├── HierarchicalBlock.jsx  # New - Handles nested flow graphs
-│   │   └── index.js              # Export all block helper components
+│   │   ├── BlockDialog.jsx    # block diaglog handling
+│   │   ├── HDLNode.jsx        # 'parent class' of block
+│   │   └── index.js           # Export all block helper components
 │   ├── blocks/
-│   │   ├── Adder.jsx          # Existing - Base block functionality
-│   │   ├── Multiplier.jsx        # Existing - Block configuration dialog
-│   ├── generators/
-│   │   ├── SystemVerilogGenerator.jsx          # Existing - Base block functionality
-│   ├── BlockLibrary.jsx          # Existing - Shows available blocks
-│   ├── FileDrawer.jsx           # Existing - File management UI
-│   ├── FileEditor.jsx           # Existing - Edit generated files
-│   ├── FileExplorer.jsx         # Existing - Browse generated files
-│   └── FlowGraph.jsx            # Existing - Main graph component
+│   │   ├── Adder.jsx          # simple adder block
+│   │   ├── Multiplier.jsx     # simple multiplier block
+│   │   ├── InPort.jsx         # InPort block
+│   │   ├── OutPort.jsx        # OutPort block
+│   ├── BlockLibrary.jsx       # displays all blocks in flowgraph pane
+│   ├── FileDrawer.jsx         # file explorer draw for gen'd files
+│   ├── FileEditor.jsx         # displaying .sv files 
+│   ├── FileExplorer.jsx       # Edisplaying .sv files
+│   └── FlowGraph.jsx          # main flow graph component
+│   ├── lib/
+│   │   ├── SystemVerilogGenerator.jsx    # generates verilog from flowgraph
 ```
