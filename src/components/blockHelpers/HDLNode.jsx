@@ -178,6 +178,12 @@ const HDLNode = ({ data, id, selected }) => {
                 zIndex: 1,
               }}
             >
+              {!isSpecialShape && (
+                <span className="text-sm ml-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {portId} [{width - 1}:0]
+                  {signed && <span className="text-gray-400 ml-1">(s)</span>}
+                </span>
+              )}
               <Handle
                 type="target"
                 position={Position.Left}
@@ -185,12 +191,6 @@ const HDLNode = ({ data, id, selected }) => {
                 className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white transition-colors hover:bg-blue-400"
                 style={{ left: isSpecialShape ? -6 : -8 }}
               />
-              {!isSpecialShape && (
-                <span className="text-sm ml-2 truncate text-gray-600 group-hover:text-gray-900 transition-colors">
-                  {portId} [{width - 1}:0]
-                  {signed && <span className="text-gray-400 ml-1">(s)</span>}
-                </span>
-              )}
             </div>
           );
         })}

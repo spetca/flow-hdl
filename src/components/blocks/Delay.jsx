@@ -5,6 +5,7 @@ import HDLNode from "../blockHelpers/HDLNode";
 const blockConfig = {
   type: "delay",
   name: "Delay",
+  synchronous: true,
   description: "Delays input signal by specified number of clock cycles",
   params: {
     DELAY: {

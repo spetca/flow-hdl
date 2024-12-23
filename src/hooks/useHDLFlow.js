@@ -149,7 +149,7 @@ export const useHDLFlow = () => {
         addEdge(
           {
             ...params,
-            type: "smoothstep",
+            type: "bezier",
             animated: true,
             style: { stroke: "#333" },
           },

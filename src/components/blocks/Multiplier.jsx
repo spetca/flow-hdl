@@ -4,6 +4,7 @@ import HDLNode from "../blockHelpers/HDLNode";
 export const blockConfig = {
   type: "multiplier",
   name: "Multiplier",
+  synchronous: false,
   description: "Multiplies two numbers",
   params: {
     DEFAULT_WIDTH: { type: "number", default: 8, min: 1, max: 32 },

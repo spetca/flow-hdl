@@ -5,16 +5,8 @@ import HDLNode from "../blockHelpers/HDLNode";
 const blockConfig = {
   type: "adder",
   name: "Adder",
+  synchronous: false,
   description: "Adds two numbers together",
-  params: {
-    DELAY_OUT: {
-      type: "number",
-      default: 1,
-      min: 0,
-      max: 512,
-      description: "Pipeline delay out",
-    },
-  },
   ports: {
     inputs: {
       a: {
@@ -83,42 +75,21 @@ const generateVerilog = (params) => {
   const portA = getPortConfig("inputs", "a");
   const portB = getPortConfig("inputs", "b");
   const portSum = getPortConfig("outputs", "sum");
-  const delay = params.DELAY_OUT || blockConfig.params.DELAY_OUT.default;
 
   return `module ${name} #(
     // Port width parameters
     parameter A_WIDTH = ${portA.width},
     parameter B_WIDTH = ${portB.width},
     parameter SUM_WIDTH = ${portSum.width},
-    
-    // Block parameters
-    parameter DELAY_OUT = ${delay}
 )(
     input wire clk,  // Clock signal defined in block
     input wire ${portA.signed ? "signed " : ""}[A_WIDTH-1:0] a,
     input wire ${portB.signed ? "signed " : ""}[B_WIDTH-1:0] b,
     output reg ${portSum.signed ? "signed " : ""}[SUM_WIDTH-1:0] sum
 );
-
-    // Internal signals for pipelining
-    reg [SUM_WIDTH-1:0] sum_pipe [0:DELAY_OUT-1];  // Fixed array declaration
     
-    // Addition logic with pipeline    
-    generate
-        if (DELAY_OUT == 0) begin
-            // Direct assignment for zero delay
-            assign  sum = a + b;
-        end else begin
-            integer i;
-            always @(posedge clk) begin
-                sum_pipe[0] <= a + b; // Compute initial sum
-                for (i = 1; i < DELAY_OUT; i = i + 1) begin
-                    sum_pipe[i] <= sum_pipe[i-1];
-                end
-                sum <= sum_pipe[DELAY_OUT-1]; // Final stage feeds the output
-            end
-        end
-    endgenerate
+    // Addition logic with pipeline  
+    assign sum = a + b;  
     
 endmodule`;
 };

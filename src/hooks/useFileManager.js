@@ -7,10 +7,35 @@ export const useFileManager = (nodes, edges, moduleName) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const generateHDL = useCallback(() => {
-    const generator = new SystemVerilogGenerator(nodes, edges, moduleName);
+    // Create a flow graph JSON object
+    const flowGraphJson = {
+      nodes,
+      edges,
+      moduleName,
+      hierarchicalBlocks: [], // You can populate this if needed
+      flowStack: [
+        {
+          id: "top",
+          name: "Top Level",
+          nodes: [],
+          edges: [],
+        },
+      ],
+      currentLevel: 0,
+    };
+
+    const generator = new SystemVerilogGenerator(flowGraphJson);
     const files = generator.generate();
 
-    setGeneratedFiles(files);
+    // Include the JSON file in the generated files
+    const jsonFileName = `${moduleName}.json`;
+    const jsonFileContent = JSON.stringify(flowGraphJson, null, 2);
+
+    setGeneratedFiles({
+      ...files,
+      [jsonFileName]: jsonFileContent,
+    });
+
     setIsDrawerOpen(true);
   }, [nodes, edges, moduleName]);
 

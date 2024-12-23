@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   Controls,
   Background,
@@ -51,6 +51,61 @@ const FlowGraph = () => {
 
   const { fitView, zoomIn, zoomOut, getNodes, getEdges, project } =
     useReactFlow();
+
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+
+  // Clear graph function
+  const clearGraph = useCallback(() => {
+    setNodes([]);
+    setEdges([]);
+    setModuleName("top_module");
+    setShowClearConfirmation(false);
+  }, [setNodes, setEdges, setModuleName]);
+
+  // Confirmation Modal Component
+  const ClearConfirmationModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl">
+        <h2 className="text-xl font-bold mb-4">Clear Entire Flow Graph</h2>
+        <p className="mb-4">
+          Are you sure you want to clear the entire flow graph? This action
+          cannot be undone.
+        </p>
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => setShowClearConfirmation(false)}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={clearGraph}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Clear Graph
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Import default flow on component mount
+  useEffect(() => {
+    const importDefaultFlow = async () => {
+      try {
+        // Dynamically import the default JSON
+        const defaultFlowModule = await import("../assets/default_flow.json");
+        importFlow(defaultFlowModule.default);
+      } catch (error) {
+        console.error("Error importing default flow:", error);
+        // Optionally set up an empty initial state
+        setNodes([]);
+        setEdges([]);
+      }
+    };
+
+    importDefaultFlow();
+  }, [importFlow, setNodes, setEdges]);
 
   // Handle keyboard shortcuts including copy/paste
   useEffect(() => {
@@ -163,12 +218,6 @@ const FlowGraph = () => {
     setEdges,
   ]);
 
-  const defaultEdgeOptions = {
-    style: { strokeWidth: 2, stroke: "#333" },
-    type: "smoothstep",
-    markerEnd: { type: "arrowclosed", color: "#333" },
-  };
-
   return (
     <div className="h-screen">
       <Panel position="top-left" className="flex gap-2">
@@ -184,6 +233,12 @@ const FlowGraph = () => {
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
         >
           Export Flow
+        </button>
+        <button
+          onClick={() => setShowClearConfirmation(true)}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+        >
+          Clear Graph
         </button>
         <label className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors cursor-pointer">
           Import Flow
@@ -223,9 +278,6 @@ const FlowGraph = () => {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         fitView
-        defaultEdgeOptions={defaultEdgeOptions}
-        connectionLineStyle={{ stroke: "black", strokeWidth: 2 }}
-        connectionMode={ConnectionMode.Loose}
         selectionMode={SelectionMode.Partial}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode={["Control", "Meta"]}
@@ -236,26 +288,13 @@ const FlowGraph = () => {
         zoomOnPinch={true}
         selectNodesOnDrag={true}
         className="w-full h-full bg-gray-50"
+        style={{ backgroundColor: "#F7F9FB" }}
       >
-        <Background variant="dots" gap={12} size={1} color="#ccc" />
+        <Background variant="dots" gap={10} size={1} color="#ccc" />
         <Controls
           className="bg-white"
           showInteractive={true}
           fitViewOptions={{ padding: 0.1 }}
-        />
-        <MiniMap
-          className="bg-white rounded-lg shadow-lg"
-          nodeColor={(node) => {
-            switch (node.data?.config?.type) {
-              case "inport":
-                return "#0050FF";
-              case "outport":
-                return "#FF2E8B";
-              default:
-                return "#A845D0";
-            }
-          }}
-          maskColor="rgba(255, 255, 255, 0.5)"
         />
 
         {currentSystem && currentSystem.parent && (
@@ -274,6 +313,9 @@ const FlowGraph = () => {
         onFileSelect={setSelectedFile}
         onClose={toggleFileDrawer}
       />
+
+      {/* Confirmation Modal */}
+      {showClearConfirmation && <ClearConfirmationModal />}
     </div>
   );
 };

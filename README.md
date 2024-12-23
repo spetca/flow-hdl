@@ -120,6 +120,7 @@ src/
 │   │   ├── Multiplier.jsx     # simple multiplier block
 │   │   ├── InPort.jsx         # InPort block
 │   │   ├── OutPort.jsx        # OutPort block
+│   │   ├── Delay.jsx        # OutPort block
 │   ├── BlockLibrary.jsx       # displays all blocks in flowgraph pane
 │   ├── FileDrawer.jsx         # file explorer draw for gen'd files
 │   ├── FileEditor.jsx         # displaying .sv files 

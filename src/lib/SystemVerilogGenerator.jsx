@@ -1,7 +1,10 @@
 import { blockRegistry } from "../components/blockHelpers";
 
 class SystemVerilogGenerator {
-  constructor(nodes, edges, moduleName, hierarchicalBlocks) {
+  constructor(flowGraphJson) {
+    // Destructure directly from the JSON
+    const { nodes, edges, moduleName, hierarchicalBlocks } = flowGraphJson;
+
     this.nodes = nodes;
     this.edges = edges;
     this.moduleName = moduleName;
@@ -52,10 +55,16 @@ class SystemVerilogGenerator {
     return wireName;
   }
 
-  generateWireNameForConnection(sourceId, targetId) {
+  generateWireNameForConnection(
+    sourceId,
+    sourceHandle,
+    targetId,
+    targetHandle
+  ) {
     const sourceNode = this.nodes.find((n) => n.id === sourceId);
     const targetNode = this.nodes.find((n) => n.id === targetId);
-    return `wire_${sourceNode.data.name}_to_${targetNode.data.name}`;
+
+    return `wire_${sourceNode.data.name}_${sourceHandle}_to_${targetNode.data.name}_${targetHandle}`;
   }
 
   generateWireDeclarations() {
@@ -66,7 +75,9 @@ class SystemVerilogGenerator {
       const sourcePort = connection.sourcePort;
       const wireName = this.generateWireNameForConnection(
         connection.source,
-        connection.target
+        connection.sourceHandle,
+        connection.target,
+        connection.targetHandle
       );
 
       const wireDecl = `logic ${sourcePort.signed ? "signed " : ""}[${
@@ -158,7 +169,9 @@ class SystemVerilogGenerator {
               if (connection) {
                 const wireName = this.generateWireNameForConnection(
                   connection.source,
-                  connection.target
+                  connection.sourceHandle,
+                  connection.target,
+                  connection.targetHandle
                 );
                 return `        .${portId}(${wireName})`;
               }
@@ -167,7 +180,9 @@ class SystemVerilogGenerator {
         );
 
         // Add clock to port mappings
-        portMappings.push("        .clk(clk)");
+        if (node.data.config.synchronous) {
+          portMappings.push("        .clk(clk)");
+        }
 
         return `    ${moduleType}${parameterList} ${instanceName} (\n${portMappings.join(
           ",\n"
@@ -201,28 +216,6 @@ class SystemVerilogGenerator {
         }
       }
     });
-  }
-
-  addClockToBlockModule(moduleCode) {
-    // Add clock to module port list if it's not already there
-    const moduleMatch = moduleCode.match(
-      /module\s+\w+\s*#?\s*\([^)]*\)\s*\([^;]*\)/s
-    );
-    if (moduleMatch) {
-      const moduleHeader = moduleMatch[0];
-      if (!moduleHeader.includes("clk")) {
-        const insertPoint = moduleHeader.lastIndexOf(")");
-        const newHeader =
-          moduleHeader.slice(0, insertPoint) +
-          (moduleHeader.slice(insertPoint - 1, insertPoint).trim() === "("
-            ? ""
-            : ",\n    ") +
-          "input wire clk" +
-          moduleHeader.slice(insertPoint);
-        moduleCode = moduleCode.replace(moduleHeader, newHeader);
-      }
-    }
-    return moduleCode;
   }
 
   generate() {
