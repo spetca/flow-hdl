@@ -13,15 +13,6 @@ export const useFileManager = (nodes, edges, moduleName) => {
       edges,
       moduleName,
       hierarchicalBlocks: [], // You can populate this if needed
-      flowStack: [
-        {
-          id: "top",
-          name: "Top Level",
-          nodes: [],
-          edges: [],
-        },
-      ],
-      currentLevel: 0,
     };
 
     const generator = new SystemVerilogGenerator(flowGraphJson);
