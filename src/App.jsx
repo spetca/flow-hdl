@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { Library } from "lucide-react";
+import { Library, Keyboard } from "lucide-react";
 import FlowGraph from "./components/FlowGraph";
 import BlockLibrary from "./components/BlockLibrary";
+import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ControlPanel from "./components/ControlPanel";
 import FileDrawer from "./components/FileDrawer";
 import { ReactFlowProvider } from "reactflow";
@@ -10,8 +11,7 @@ import { useFileManager } from "./hooks/useFileManager";
 
 const App = () => {
   // UI State
-  const [isLibraryOpen, setIsLibraryOpen] = useState(true);
-  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [activePanel, setActivePanel] = useState("library"); // 'library' or 'shortcuts' or null
 
   // Flow State and Handlers
   const {
@@ -42,16 +42,26 @@ const App = () => {
     setSelectedFile,
   } = useFileManager(nodes, edges, moduleName);
 
-  // Clear graph handler with undo history clearing
+  // Panel toggle handlers
+  const toggleLibrary = () => {
+    setActivePanel((prevPanel) => (prevPanel === "library" ? null : "library"));
+  };
+
+  const toggleShortcuts = () => {
+    setActivePanel((prevPanel) =>
+      prevPanel === "shortcuts" ? null : "shortcuts"
+    );
+  };
+
+  // Clear graph handler
   const clearGraph = useCallback(() => {
     setNodes([]);
     setEdges([]);
     setModuleName("top_module");
-    setShowClearConfirmation(false);
     localStorage.removeItem("flowClipboard");
   }, [setNodes, setEdges, setModuleName]);
 
-  // HDL Generation handler with error handling
+  // HDL Generation handler
   const handleGenerateHDL = useCallback(() => {
     try {
       generateHDL();
@@ -61,33 +71,6 @@ const App = () => {
     }
   }, [generateHDL]);
 
-  // Confirmation Modal Component
-  const ClearConfirmationModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl">
-        <h2 className="text-xl font-bold mb-4">Clear Entire Flow Graph</h2>
-        <p className="mb-4">
-          Are you sure you want to clear the entire flow graph? This action
-          cannot be undone.
-        </p>
-        <div className="flex justify-end space-x-2">
-          <button
-            onClick={() => setShowClearConfirmation(false)}
-            className="px-3 py-1.5 bg-white border border-black/80 rounded text-sm font-medium hover:bg-black hover:text-white transition-colors duration-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={clearGraph}
-            className="px-3 py-1.5 bg-white border border-red-500 text-red-500 rounded text-sm font-medium hover:bg-red-500 hover:text-white transition-colors duration-200"
-          >
-            Clear Graph
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="w-screen h-screen flex flex-col">
       {/* Top Bar */}
@@ -95,12 +78,30 @@ const App = () => {
         <h1 className="text-xl font-semibold">flow hdl</h1>
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={() => setIsLibraryOpen(!isLibraryOpen)}
-            className="p-2 hover:bg-gray-100 rounded-md flex items-center gap-2 text-sm"
-            title={isLibraryOpen ? "Hide Library" : "Show Library"}
+            onClick={toggleShortcuts}
+            className={`p-2 rounded-md flex items-center gap-2 text-sm transition-colors ${
+              activePanel === "shortcuts"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
+            title="Toggle Keyboard Shortcuts"
+          >
+            <Keyboard className="w-5 h-5" />
+            <span>Shortcuts</span>
+          </button>
+          <button
+            onClick={toggleLibrary}
+            className={`p-2 rounded-md flex items-center gap-2 text-sm transition-colors ${
+              activePanel === "library"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
+            title="Toggle Block Library"
           >
             <Library className="w-5 h-5" />
-            <span>{isLibraryOpen ? "Hide Library" : "Show Library"}</span>
+            <span>
+              {activePanel === "library" ? "Hide Library" : "Show Library"}
+            </span>
           </button>
         </div>
       </div>
@@ -108,17 +109,15 @@ const App = () => {
       {/* Main Content */}
       <div className="flex-1 relative">
         <ReactFlowProvider>
-          {/* Control Panel */}
           <ControlPanel
             moduleName={moduleName}
             setModuleName={setModuleName}
             generateHDL={handleGenerateHDL}
             exportFlow={exportFlow}
-            setShowClearConfirmation={setShowClearConfirmation}
+            setShowClearConfirmation={clearGraph}
             importFlow={importFlow}
           />
 
-          {/* Flow Graph */}
           <FlowGraph
             nodes={nodes}
             edges={edges}
@@ -133,13 +132,16 @@ const App = () => {
             navigateToParent={navigateToParent}
           />
 
-          {/* Block Library */}
-          <BlockLibrary
-            isOpen={isLibraryOpen}
-            onToggle={() => setIsLibraryOpen(!isLibraryOpen)}
+          <KeyboardShortcuts
+            isOpen={activePanel === "shortcuts"}
+            onToggle={toggleShortcuts}
           />
 
-          {/* File Drawer */}
+          <BlockLibrary
+            isOpen={activePanel === "library"}
+            onToggle={toggleLibrary}
+          />
+
           <FileDrawer
             isOpen={isDrawerOpen}
             files={generatedFiles}
@@ -147,9 +149,6 @@ const App = () => {
             onFileSelect={setSelectedFile}
             onClose={toggleFileDrawer}
           />
-
-          {/* Confirmation Modal */}
-          {showClearConfirmation && <ClearConfirmationModal />}
         </ReactFlowProvider>
       </div>
     </div>
