@@ -6,7 +6,7 @@ The first goal of the project is to generate decent system verilog from complex 
 
 flow is in its **infancy** and any contribution is greatly appreciated - check out [how to contribute](#Contributing-Guide)
 
-<img width="1429" alt="image" src="https://github.com/user-attachments/assets/59273d91-ff1b-4c2c-81aa-b9a7ed7fa1aa" />
+<img width="1403" alt="image" src="https://github.com/user-attachments/assets/1e67576d-22a9-4536-8217-d0025b2aba04" />
 
 ## What it can do 
 - create simple HDL from predfined user blocks
