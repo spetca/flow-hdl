@@ -1,8 +1,7 @@
 // InPort.jsx
-import React from "react";
-import HDLNode from "../blockHelpers/HDLNode";
+import { createBlock } from "../blockHelpers/BlockFactory";
 
-const blockConfig = {
+const config = {
   type: "inport",
   name: "Input Port",
   description: "Input port for HDL module",
@@ -16,57 +15,23 @@ const blockConfig = {
     inputs: {}, // No inputs
     outputs: {
       out: {
-        width: {
-          type: "number",
-          default: 32,
-          min: 1,
-          max: 512,
-          description: "Output port width",
-        },
-        signed: {
-          type: "boolean",
-          default: false,
-          description: "Signed/unsigned output",
-        },
+        width: { default: 32, min: 1, max: 512 },
+        signed: false,
         description: "Output port",
       },
     },
   },
 };
 
-// Helper to generate dynamic config based on port parameters
-const createDynamicConfig = (props) => {
-  const config = { ...blockConfig };
-  const { portParams = {} } = props.params || {};
+// InPorts don't need Verilog generation
+const generateVerilog = null;
 
-  Object.entries(portParams || {}).forEach(([portName, settings]) => {
-    const [portType, portId] = portName.split(".");
-    if (config.ports[portType]?.[portId]) {
-      config.ports[portType][portId] = {
-        ...config.ports[portType][portId],
-        ...settings,
-      };
-    }
-  });
+const InPortBlock = createBlock({ config, generateVerilog });
 
-  return config;
-};
-
-const InPortBlock = (props) => {
-  const dynamicConfig = createDynamicConfig(props);
-
-  return (
-    <HDLNode
-      {...props}
-      data={{
-        config: dynamicConfig,
-        name: props.name,
-        params: props.params,
-        onParameterChange: props.onParameterChange,
-      }}
-    />
-  );
-};
+// Debug check
+console.log("InPortBlock created:", {
+  config: InPortBlock.blockConfig,
+  verilog: InPortBlock.generateVerilog,
+});
 
 export default InPortBlock;
-export { blockConfig };

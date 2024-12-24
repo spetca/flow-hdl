@@ -1,8 +1,7 @@
 // Delay.jsx
-import React from "react";
-import HDLNode from "../blockHelpers/HDLNode";
+import { createBlock } from "../blockHelpers/BlockFactory";
 
-const blockConfig = {
+const config = {
   type: "delay",
   name: "Delay",
   synchronous: true,
@@ -19,56 +18,25 @@ const blockConfig = {
   ports: {
     inputs: {
       in: {
-        width: {
-          type: "number",
-          default: 32,
-          min: 1,
-          max: 512,
-          description: "Input signal width",
-        },
-        signed: {
-          type: "boolean",
-          default: false,
-          description: "Signed/unsigned input",
-        },
+        width: { default: 32, min: 1, max: 512 },
+        signed: false,
         description: "Input signal to delay",
       },
     },
     outputs: {
       out: {
-        width: {
-          type: "number",
-          default: 32,
-          min: 1,
-          max: 512,
-          description: "Output signal width (same as input)",
-        },
-        signed: {
-          type: "boolean",
-          default: false,
-          description: "Signed/unsigned output (same as input)",
-        },
+        width: { default: 32, min: 1, max: 512 },
+        signed: false,
         description: "Delayed output signal",
       },
     },
   },
 };
 
-const generateVerilog = (params) => {
-  const getPortConfig = (portType, portName) => {
-    if (params.ports?.[portType]?.[portName]) {
-      return params.ports[portType][portName];
-    }
-    return {
-      width: params.WIDTH || blockConfig.ports.inputs.in.width.default,
-      signed: params.SIGNED ?? blockConfig.ports.inputs.in.signed.default,
-    };
-  };
-
-  const name = params.name || "delay";
-  const portIn = getPortConfig("inputs", "in");
-  const portOut = getPortConfig("outputs", "out");
-  const delay = params.DELAY || blockConfig.params.DELAY.default;
+const generateVerilog = ({ name = "delay", ports, params }) => {
+  const portIn = ports?.inputs?.in || { width: 32, signed: false };
+  const portOut = ports?.outputs?.out || { width: 32, signed: false };
+  const delay = params?.DELAY || config.params.DELAY.default;
 
   return `module ${name} #(
     // Port width parameter
@@ -77,7 +45,7 @@ const generateVerilog = (params) => {
     // Delay parameter
     parameter DELAY = ${delay}
 )(
-    input wire clk,  // Clock signal
+    input wire clk,
     input wire ${portIn.signed ? "signed " : ""}[WIDTH-1:0] in,
     output ${portOut.signed ? "signed " : ""}[WIDTH-1:0] out
 );
@@ -111,39 +79,12 @@ const generateVerilog = (params) => {
 endmodule`;
 };
 
-// Helper to generate dynamic config based on port parameters
-const createDynamicConfig = (props) => {
-  const config = { ...blockConfig };
-  const { portParams = {}, blockParams = {} } = props.params || {};
+const DelayBlock = createBlock({ config, generateVerilog });
 
-  Object.entries(portParams || {}).forEach(([portName, settings]) => {
-    const [portType, portId] = portName.split(".");
-    if (config.ports[portType]?.[portId]) {
-      config.ports[portType][portId] = {
-        ...config.ports[portType][portId],
-        ...settings,
-      };
-    }
-  });
-
-  return config;
-};
-
-const DelayBlock = (props) => {
-  const dynamicConfig = createDynamicConfig(props);
-
-  return (
-    <HDLNode
-      {...props}
-      data={{
-        config: dynamicConfig,
-        name: props.name,
-        params: props.params,
-        onParameterChange: props.onParameterChange,
-      }}
-    />
-  );
-};
+// Debug check
+console.log("DelayBlock created:", {
+  config: DelayBlock.blockConfig,
+  verilog: DelayBlock.generateVerilog,
+});
 
 export default DelayBlock;
-export { blockConfig, generateVerilog };

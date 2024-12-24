@@ -1,17 +1,9 @@
-import AdderBlock, {
-  blockConfig as adderConfig,
-  generateVerilog as adderVerilog,
-} from "../blocks/Adder";
-import MultiplierBlock, {
-  blockConfig as multiplierConfig,
-  generateVerilog as multiplierVerilog,
-} from "../blocks/Multiplier";
-import InPortBlock, { blockConfig as inportConfig } from "../blocks/InPort";
-import OutPortBlock, { blockConfig as outportConfig } from "../blocks/OutPort";
-import DelayBlock, {
-  blockConfig as delayConfig,
-  generateVerilog as delayVerilog,
-} from "../blocks/Delay";
+// index.jsx
+import AdderBlock from "../blocks/Adder";
+import MultiplierBlock from "../blocks/Multiplier";
+import InPortBlock from "../blocks/InPort";
+import OutPortBlock from "../blocks/OutPort";
+import DelayBlock from "../blocks/Delay";
 import HDLNode from "./HDLNode";
 import BlockConfiguration from "./BlockConfiguration";
 
@@ -27,32 +19,34 @@ export const blockRegistry = {
   inport: {
     type: BlockTypes.INPORT,
     component: InPortBlock,
-    config: inportConfig,
+    config: InPortBlock.blockConfig,
   },
   outport: {
     type: BlockTypes.OUTPORT,
     component: OutPortBlock,
-    config: outportConfig,
+    config: OutPortBlock.blockConfig,
   },
   delay: {
     type: BlockTypes.PRIMITIVE,
     component: DelayBlock,
-    config: delayConfig,
-    generateVerilog: delayVerilog,
+    config: DelayBlock.blockConfig,
+    generateVerilog: DelayBlock.generateVerilog,
   },
   adder: {
     type: BlockTypes.PRIMITIVE,
     component: AdderBlock,
-    config: adderConfig,
-    generateVerilog: adderVerilog,
+    config: AdderBlock.blockConfig,
+    generateVerilog: AdderBlock.generateVerilog,
   },
   multiplier: {
     type: BlockTypes.PRIMITIVE,
     component: MultiplierBlock,
-    config: multiplierConfig,
-    generateVerilog: multiplierVerilog,
+    config: MultiplierBlock.blockConfig,
+    generateVerilog: MultiplierBlock.generateVerilog,
   },
 };
+
+console.log("blockRegistry created:", blockRegistry);
 
 // Helper function to get block info for the library
 export const getBlockLibrary = () => {
@@ -75,22 +69,12 @@ export const getBlockConfig = (type) => {
 };
 
 // Helper to generate Verilog
-export const generateBlockVerilog = (
-  type,
-  params,
-  internalNodes,
-  internalEdges
-) => {
+export const generateBlockVerilog = (type, params) => {
   const block = blockRegistry[type];
-  if (!block) return null;
+  if (!block?.generateVerilog) return null;
 
   return block.generateVerilog(params);
 };
 
 // Export all components and utilities
 export { HDLNode, BlockConfiguration };
-
-// Create a new VerilogGenerator instance for the entire design
-export const createVerilogGenerator = () => {
-  return new VerilogGenerator();
-};

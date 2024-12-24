@@ -1,8 +1,7 @@
 // OutPort.jsx
-import React from "react";
-import HDLNode from "../blockHelpers/HDLNode";
+import { createBlock } from "../blockHelpers/BlockFactory";
 
-const blockConfig = {
+const config = {
   type: "outport",
   name: "Output Port",
   description: "Output port for HDL module",
@@ -15,18 +14,8 @@ const blockConfig = {
   ports: {
     inputs: {
       in: {
-        width: {
-          type: "number",
-          default: 32,
-          min: 1,
-          max: 512,
-          description: "Input port width",
-        },
-        signed: {
-          type: "boolean",
-          default: false,
-          description: "Signed/unsigned input",
-        },
+        width: { default: 32, min: 1, max: 512 },
+        signed: false,
         description: "Input port",
       },
     },
@@ -34,39 +23,15 @@ const blockConfig = {
   },
 };
 
-// Helper to generate dynamic config based on port parameters
-const createDynamicConfig = (props) => {
-  const config = { ...blockConfig };
-  const { portParams = {} } = props.params || {};
+// OutPorts don't need Verilog generation as they're handled by the parent module
+const generateVerilog = null;
 
-  Object.entries(portParams || {}).forEach(([portName, settings]) => {
-    const [portType, portId] = portName.split(".");
-    if (config.ports[portType]?.[portId]) {
-      config.ports[portType][portId] = {
-        ...config.ports[portType][portId],
-        ...settings,
-      };
-    }
-  });
+const OutPortBlock = createBlock({ config, generateVerilog });
 
-  return config;
-};
-
-const OutPortBlock = (props) => {
-  const dynamicConfig = createDynamicConfig(props);
-
-  return (
-    <HDLNode
-      {...props}
-      data={{
-        config: dynamicConfig,
-        name: props.name,
-        params: props.params,
-        onParameterChange: props.onParameterChange,
-      }}
-    />
-  );
-};
+// Debug check
+console.log("OutPortBlock created:", {
+  config: OutPortBlock.blockConfig,
+  verilog: OutPortBlock.generateVerilog,
+});
 
 export default OutPortBlock;
-export { blockConfig };

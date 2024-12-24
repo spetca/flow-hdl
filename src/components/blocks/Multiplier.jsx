@@ -1,48 +1,80 @@
-import React from "react";
-import HDLNode from "../blockHelpers/HDLNode";
+// Multiplier.jsx
+import { createBlock } from "../blockHelpers/BlockFactory";
 
-export const blockConfig = {
+const config = {
   type: "multiplier",
   name: "Multiplier",
   synchronous: false,
   description: "Multiplies two numbers",
   params: {
-    DEFAULT_WIDTH: { type: "number", default: 8, min: 1, max: 32 },
-    SIGNED: { type: "boolean", default: true },
+    DEFAULT_WIDTH: {
+      type: "number",
+      default: 8,
+      min: 1,
+      max: 32,
+      description: "Default port width",
+    },
+    SIGNED: {
+      type: "boolean",
+      default: true,
+      description: "Whether the multiplier is signed",
+    },
   },
   ports: {
     inputs: {
-      a: { width: 8, signed: true },
-      b: { width: 8, signed: true },
+      a: {
+        width: { default: 8, min: 1, max: 32 },
+        signed: true,
+        description: "First input operand",
+      },
+      b: {
+        width: { default: 8, min: 1, max: 32 },
+        signed: true,
+        description: "Second input operand",
+      },
     },
     outputs: {
-      product: { width: 16, signed: true }, // Note: output is twice the width
+      product: {
+        width: { default: 16, min: 2, max: 64 }, // Note: output is twice the width
+        signed: true,
+        description: "Product of inputs",
+      },
     },
   },
 };
 
-export const generateVerilog = (params) => `
-module ${params.name} #(
-    parameter WIDTH = ${params.DEFAULT_WIDTH}
-)(
-    input ${params.SIGNED ? "signed" : "unsigned"} [WIDTH-1:0] a,
-    input ${params.SIGNED ? "signed" : "unsigned"} [WIDTH-1:0] b,
-    output ${params.SIGNED ? "signed" : "unsigned"} [WIDTH*2-1:0] product
-);
-    assign product = a * b;
-endmodule
-`;
+const generateVerilog = ({ name = "multiplier", ports, params }) => {
+  const portA = ports?.inputs?.a || {
+    width: config.params.DEFAULT_WIDTH.default,
+    signed: config.params.SIGNED.default,
+  };
+  const portB = ports?.inputs?.b || {
+    width: config.params.DEFAULT_WIDTH.default,
+    signed: config.params.SIGNED.default,
+  };
+  const portProduct = ports?.outputs?.product || {
+    width: config.params.DEFAULT_WIDTH.default * 2,
+    signed: config.params.SIGNED.default,
+  };
 
-const MultiplierBlock = (props) => (
-  <HDLNode
-    {...props}
-    data={{
-      config: blockConfig,
-      name: props.name,
-      params: props.params,
-      onParameterChange: props.onParameterChange,
-    }}
-  />
+  return `module ${name} #(
+    parameter WIDTH = ${portA.width}
+)(
+    input wire ${portA.signed ? "signed " : ""}[WIDTH-1:0] a,
+    input wire ${portB.signed ? "signed " : ""}[WIDTH-1:0] b,
+    output wire ${portProduct.signed ? "signed " : ""}[WIDTH*2-1:0] product
 );
+    // Multiplication logic
+    assign product = a * b;
+endmodule`;
+};
+
+const MultiplierBlock = createBlock({ config, generateVerilog });
+
+// Debug check
+console.log("MultiplierBlock created:", {
+  config: MultiplierBlock.blockConfig,
+  verilog: MultiplierBlock.generateVerilog,
+});
 
 export default MultiplierBlock;

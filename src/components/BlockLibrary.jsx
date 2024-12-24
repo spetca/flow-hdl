@@ -5,6 +5,11 @@ const BlockLibrary = ({ isOpen, onToggle }) => {
   const [width, setWidth] = useState(20); // Default to 20% of viewport
   const [isDragging, setIsDragging] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log("BlockLibrary mounted, registry:", blockRegistry);
+  }, []);
+
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/json", nodeType);
     event.dataTransfer.effectAllowed = "move";
