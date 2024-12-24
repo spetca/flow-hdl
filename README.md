@@ -4,9 +4,11 @@ flow hdl is an open source web-based flowgraph HDL generator inspired by tools l
 
 The first goal of the project is to generate decent system verilog from complex hierarchical flowgraphs.
 
-flow is in its **infancy** and any contribution is greatly appreciated - check out [how to contribute](#Contributing-Guide)
-
 <img width="1403" alt="image" src="https://github.com/user-attachments/assets/1e67576d-22a9-4536-8217-d0025b2aba04" />
+
+## why react/javascript
+
+You might be asking, "Why build this with web tech?" The answer is simple: Web technologies, especially tools like React, have a huge and active community of developers already familiar with them. By building this HDL/Verilog generation tool as a web app, I want to make it as accessible as possible to a wide range of developers so they can contribute and help improve the tool. It's all about creating an open, collaborative environment that allows us to make real progress in generating hardware descriptions from flowgraphs. Whether you're a hardware designer or just someone who's comfortable with web dev, this platform makes it easy to get involved and move the project forward.
 
 ## What it can do
 
@@ -18,6 +20,10 @@ flow is in its **infancy** and any contribution is greatly appreciated - check o
 - robust error checking - it can generate unsynth-able code
 - simulate
 - create test benches
+
+## contributing
+
+flow is in its **infancy** and any contribution is greatly appreciated - check out [how to contribute](#Contributing-Guide)
 
 ## quickstart keyboard shortcuts
 
