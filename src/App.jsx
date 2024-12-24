@@ -30,6 +30,7 @@ const App = () => {
     navigateToParent,
     exportFlow,
     importFlow,
+    onParameterChange,
   } = useHDLFlow();
 
   // File Management
@@ -132,6 +133,7 @@ const App = () => {
             navigateToParent={navigateToParent}
             importFlow={importFlow} // Explicitly pass importFlow here
             generateHDL={handleGenerateHDL}
+            onParameterChange={onParameterChange}
           />
 
           <KeyboardShortcuts

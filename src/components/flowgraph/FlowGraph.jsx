@@ -27,11 +27,13 @@ const FlowGraph = ({
   navigateToParent,
   importFlow,
   generateHDL,
+  onParameterChange,
 }) => {
   useFlowKeyboardShortcuts({
     setNodes,
     setEdges,
     generateHDL,
+    onParameterChange,
   });
 
   // Import default flow on component mount

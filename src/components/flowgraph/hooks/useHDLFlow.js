@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNodesState, useEdgesState, addEdge } from "reactflow";
 import { getBlockConfig } from "../../blockHelpers";
+import { createInitializedNode } from "../../../lib/nodeInitialization";
 
 export const useHDLFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -13,6 +14,40 @@ export const useHDLFlow = () => {
   const [hierarchicalBlocks, setHierarchicalBlocks] = useState(new Map());
 
   const currentSystem = flowStack[currentLevel];
+
+  const onParameterChange = useCallback((nodeId, updates) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          const newNode = {
+            ...node,
+            data: {
+              ...node.data,
+              config: updates.config,
+              params: updates.params,
+              name: updates.name,
+            },
+          };
+
+          if (node.data.isHierarchical && updates.ports) {
+            setHierarchicalBlocks((prev) => {
+              const blockData = prev.get(nodeId) || { nodes: [], edges: [] };
+              return new Map(
+                prev.set(nodeId, {
+                  ...blockData,
+                  ports: updates.ports,
+                })
+              );
+            });
+          }
+
+          return newNode;
+        }
+        return node;
+      })
+    );
+  }, []);
+
   // Helper function to initialize port configurations
   // Helper function to initialize port configurations with proper default handling
   const initializePortConfigs = (config) => {
@@ -77,39 +112,6 @@ export const useHDLFlow = () => {
     return params;
   };
 
-  const onParameterChange = useCallback((nodeId, updates) => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          const newNode = {
-            ...node,
-            data: {
-              ...node.data,
-              config: updates.config,
-              params: updates.params,
-              name: updates.name,
-            },
-          };
-
-          if (node.data.isHierarchical && updates.ports) {
-            setHierarchicalBlocks((prev) => {
-              const blockData = prev.get(nodeId) || { nodes: [], edges: [] };
-              return new Map(
-                prev.set(nodeId, {
-                  ...blockData,
-                  ports: updates.ports,
-                })
-              );
-            });
-          }
-
-          return newNode;
-        }
-        return node;
-      })
-    );
-  }, []);
-
   const onConnect = useCallback(
     (params) => {
       const sourceNode = nodes.find((n) => n.id === params.source);
@@ -119,7 +121,6 @@ export const useHDLFlow = () => {
       const targetPort =
         targetNode.data.config.ports.inputs[params.targetHandle];
 
-      console.log("debug sourcePort", sourcePort);
       // Validate connection
       if (sourcePort.width.default !== targetPort.width.default) {
         alert(
@@ -171,34 +172,25 @@ export const useHDLFlow = () => {
       };
 
       const config = getBlockConfig(type);
+      const newNodeId = `${type}_${Date.now()}`;
+      const nodeName = `${type}${nodes.length}`;
 
-      // Initialize ports and parameters
-      const initializedPorts = initializePortConfigs(config);
-      const initializedParams = initializeParams(config);
-
-      const newNode = {
-        id: `${type}_${Date.now()}`,
-        type: "hdlNode",
+      const newNode = createInitializedNode({
+        id: newNodeId,
+        type,
         position,
-        data: {
-          config: {
-            ...config,
-            ports: initializedPorts,
-          },
-          name: `${type}${nodes.length}`,
-          params: initializedParams,
-          isHierarchical,
-          internalNodes: [],
-          internalEdges: [],
-          onParameterChange,
-        },
-      };
+        config,
+        name: nodeName,
+        onParameterChange,
+        isHierarchical,
+      });
 
       if (isHierarchical) {
+        const initializedPorts = newNode.data.config.ports;
         setHierarchicalBlocks(
           (prev) =>
             new Map(
-              prev.set(newNode.id, {
+              prev.set(newNodeId, {
                 nodes: [],
                 edges: [],
                 ports: initializedPorts,
@@ -378,8 +370,8 @@ export const useHDLFlow = () => {
     navigateToChild,
     exportFlow,
     importFlow,
-    onParameterChange,
     setNodes,
     setEdges,
+    onParameterChange,
   };
 };

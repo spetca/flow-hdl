@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 import { useReactFlow, getConnectedEdges } from "reactflow";
+import { getBlockConfig } from "../../blockHelpers";
+import { createInitializedNode } from "../../../lib/nodeInitialization";
 
 export const useFlowKeyboardShortcuts = ({
   setNodes,
   setEdges,
   generateHDL,
+  onParameterChange,
 }) => {
   const { fitView, zoomIn, zoomOut, getNodes, getEdges, project } =
     useReactFlow();
@@ -41,11 +44,9 @@ export const useFlowKeyboardShortcuts = ({
       // Copy/Paste functionality
       if (event.ctrlKey || event.metaKey) {
         if (event.key === "c") {
-          // Handle Copy
           const selectedNodes = getNodes().filter((node) => node.selected);
           if (selectedNodes.length === 0) return;
 
-          // Only include edges where both source and target nodes are selected
           const selectedEdges = getConnectedEdges(
             selectedNodes,
             getEdges()
@@ -59,6 +60,13 @@ export const useFlowKeyboardShortcuts = ({
             nodes: selectedNodes.map((node) => ({
               ...node,
               position: { ...node.position },
+              data: {
+                ...node.data,
+                config: {
+                  ...node.data.config,
+                  type: node.data.config.type || node.type.split("_")[0],
+                },
+              },
             })),
             edges: selectedEdges,
           };
@@ -67,7 +75,6 @@ export const useFlowKeyboardShortcuts = ({
         }
 
         if (event.key === "v") {
-          // Handle Paste
           try {
             const clipboard = JSON.parse(localStorage.getItem("flowClipboard"));
             if (!clipboard) return;
@@ -75,9 +82,11 @@ export const useFlowKeyboardShortcuts = ({
             const now = Date.now();
             const idMap = {};
 
-            // Create new nodes with offset positions
+            // Create new nodes with proper initialization
             const newNodes = clipboard.nodes.map((node) => {
-              const newId = `${node.type}_${now}_${Math.random()
+              const type = node.data.config.type;
+              const baseConfig = getBlockConfig(type);
+              const newId = `${type}_${now}_${Math.random()
                 .toString(36)
                 .substr(2, 9)}`;
               idMap[node.id] = newId;
@@ -89,31 +98,41 @@ export const useFlowKeyboardShortcuts = ({
 
               // Create a new name for the copied node
               const existingNodes = getNodes();
-              const baseNodeName = node.data.config.type;
               let nameCounter = existingNodes.length;
               let newNodeName;
 
-              // Keep incrementing counter until we find a unique name
               do {
-                newNodeName = `${baseNodeName}${nameCounter}`;
+                newNodeName = `${type}${nameCounter}`;
                 nameCounter++;
               } while (existingNodes.some((n) => n.data.name === newNodeName));
 
-              return {
-                ...node,
+              // Create new node with initialization
+              const initializedNode = createInitializedNode({
                 id: newId,
+                type,
                 position: { x, y },
-                selected: false,
+                config: {
+                  ...baseConfig,
+                  // Preserve any customized config values from the source node
+                  ...node.data.config,
+                  type, // Ensure type is set correctly
+                },
+                name: newNodeName,
+                onParameterChange, // Use the onParameterChange from props
+                isHierarchical: node.data.isHierarchical,
+              });
+
+              // Preserve any additional data properties that might be important
+              return {
+                ...initializedNode,
                 data: {
-                  ...node.data,
-                  name: newNodeName,
-                  // Reset any connection-specific data
-                  connections: [],
+                  ...initializedNode.data,
+                  onParameterChange, // Explicitly set onParameterChange in data
+                  // Preserve any other custom data properties if needed
                 },
               };
             });
 
-            // Only create edges if we copied multiple nodes
             let newEdges = [];
             if (clipboard.nodes.length > 1) {
               newEdges = clipboard.edges.map((edge) => ({
@@ -146,5 +165,6 @@ export const useFlowKeyboardShortcuts = ({
     setNodes,
     setEdges,
     generateHDL,
+    onParameterChange,
   ]);
 };
