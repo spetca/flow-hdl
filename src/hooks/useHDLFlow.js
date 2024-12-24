@@ -21,46 +21,42 @@ export const useHDLFlow = () => {
       outputs: {},
     };
 
-    // Initialize input ports with proper default handling
+    // Initialize input ports
     Object.entries(config.ports.inputs || {}).forEach(
       ([portName, portConfig]) => {
-        // Handle width - check if it's an object with default or direct value
-        const width =
-          typeof portConfig.width === "object"
-            ? portConfig.width.default
-            : portConfig.width || 32;
-
-        // Handle signed - check if it's an object with default or direct value
-        const signed =
-          typeof portConfig.signed === "object"
-            ? portConfig.signed.default
-            : portConfig.signed || false;
-
         ports.inputs[portName] = {
-          width,
-          signed,
+          width: {
+            default:
+              typeof portConfig.width === "object"
+                ? portConfig.width.default
+                : portConfig.width || 32,
+          },
+          signed: {
+            default:
+              typeof portConfig.signed === "object"
+                ? portConfig.signed.default
+                : portConfig.signed || false,
+          },
         };
       }
     );
 
-    // Initialize output ports with proper default handling
+    // Initialize output ports
     Object.entries(config.ports.outputs || {}).forEach(
       ([portName, portConfig]) => {
-        // Handle width - check if it's an object with default or direct value
-        const width =
-          typeof portConfig.width === "object"
-            ? portConfig.width.default
-            : portConfig.width || 32;
-
-        // Handle signed - check if it's an object with default or direct value
-        const signed =
-          typeof portConfig.signed === "object"
-            ? portConfig.signed.default
-            : portConfig.signed || false;
-
         ports.outputs[portName] = {
-          width,
-          signed,
+          width: {
+            default:
+              typeof portConfig.width === "object"
+                ? portConfig.width.default
+                : portConfig.width || 32,
+          },
+          signed: {
+            default:
+              typeof portConfig.signed === "object"
+                ? portConfig.signed.default
+                : portConfig.signed || false,
+          },
         };
       }
     );
@@ -123,14 +119,15 @@ export const useHDLFlow = () => {
       const targetPort =
         targetNode.data.config.ports.inputs[params.targetHandle];
 
+      console.log("debug sourcePort", sourcePort);
       // Validate connection
-      if (sourcePort.width !== targetPort.width) {
+      if (sourcePort.width.default !== targetPort.width.default) {
         alert(
           `Cannot connect: Port widths don't match (${sourcePort.width} != ${targetPort.width})`
         );
         return;
       }
-      if (sourcePort.signed !== targetPort.signed) {
+      if (sourcePort.signed.default !== targetPort.signed.default) {
         alert("Cannot connect: Port signs don't match");
         return;
       }
