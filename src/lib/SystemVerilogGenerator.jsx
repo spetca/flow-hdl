@@ -40,8 +40,18 @@ class SystemVerilogGenerator {
   }
 
   getPortDeclaration(portConfig) {
-    const signType = portConfig.signed ? "signed" : "logic";
-    return `${signType} [${portConfig.width - 1}:0]`;
+    // Ensure we're using actual numeric values, not object references
+    const width =
+      typeof portConfig.width === "number"
+        ? portConfig.width
+        : portConfig.width?.default || 32;
+    const signed =
+      typeof portConfig.signed === "boolean"
+        ? portConfig.signed
+        : portConfig.signed?.default || false;
+
+    const signType = signed ? "signed" : "logic";
+    return `${signType} [${width - 1}:0]`;
   }
 
   generateUniqueWireName(baseName) {
@@ -72,7 +82,17 @@ class SystemVerilogGenerator {
     const connections = this.findWiringConnections();
 
     connections.forEach((connection) => {
-      const sourcePort = connection.sourcePort;
+      // Extract actual width and signed values
+      const width =
+        typeof connection.sourcePort.width === "number"
+          ? connection.sourcePort.width
+          : connection.sourcePort.width?.default || 32;
+
+      const signed =
+        typeof connection.sourcePort.signed === "boolean"
+          ? connection.sourcePort.signed
+          : connection.sourcePort.signed?.default || false;
+
       const wireName = this.generateWireNameForConnection(
         connection.source,
         connection.sourceHandle,
@@ -80,8 +100,8 @@ class SystemVerilogGenerator {
         connection.targetHandle
       );
 
-      const wireDecl = `logic ${sourcePort.signed ? "signed " : ""}[${
-        sourcePort.width - 1
+      const wireDecl = `logic ${signed ? "signed " : ""}[${
+        width - 1
       }:0] ${wireName};`;
       wireDeclarations.add(wireDecl);
 
@@ -102,12 +122,26 @@ class SystemVerilogGenerator {
       if (sourceNode && targetNode) {
         const sourcePort =
           sourceNode.data.config.ports.outputs[edge.sourceHandle];
+        const width =
+          typeof sourcePort.width === "number"
+            ? sourcePort.width
+            : sourcePort.width?.default || 32;
+
+        const signed =
+          typeof sourcePort.signed === "boolean"
+            ? sourcePort.signed
+            : sourcePort.signed?.default || false;
+
         connections.push({
           source: edge.source,
           target: edge.target,
           sourceName: sourceNode.data.name || "unnamed_source",
           targetName: targetNode.data.name || "unnamed_target",
-          sourcePort: sourcePort,
+          sourcePort: {
+            ...sourcePort,
+            width,
+            signed,
+          },
           sourceHandle: edge.sourceHandle,
           targetHandle: edge.targetHandle,
           sourceType: sourceNode.data.config.type,
@@ -129,24 +163,33 @@ class SystemVerilogGenerator {
         const moduleType = node.data.config.type;
         const instanceName = `u_${node.data.name}`;
 
-        // Get all port widths for parameterization
+        // Extract actual numeric values for port widths
         const portParams = [];
         Object.entries(node.data.config.ports.inputs || {}).forEach(
           ([portName, port]) => {
+            const width =
+              typeof port.width === "number"
+                ? port.width
+                : port.width?.default || 32;
             portParams.push(
-              `        .${portName.toUpperCase()}_WIDTH(${port.width})`
-            );
-          }
-        );
-        Object.entries(node.data.config.ports.outputs || {}).forEach(
-          ([portName, port]) => {
-            portParams.push(
-              `        .${portName.toUpperCase()}_WIDTH(${port.width})`
+              `        .${portName.toUpperCase()}_WIDTH(${width})`
             );
           }
         );
 
-        // Add other block parameters
+        Object.entries(node.data.config.ports.outputs || {}).forEach(
+          ([portName, port]) => {
+            const width =
+              typeof port.width === "number"
+                ? port.width
+                : port.width?.default || 32;
+            portParams.push(
+              `        .${portName.toUpperCase()}_WIDTH(${width})`
+            );
+          }
+        );
+
+        // Handle block parameters
         Object.entries(node.data.params || {}).forEach(([paramName, value]) => {
           const formattedValue =
             typeof value === "boolean" ? (value ? "1" : "0") : value;

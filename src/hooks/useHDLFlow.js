@@ -278,48 +278,92 @@ export const useHDLFlow = () => {
   }, [nodes, edges, moduleName, hierarchicalBlocks, flowStack, currentLevel]);
 
   const importFlow = useCallback((flowData) => {
-    // Reinitialize nodes similar to onDrop
+    // Reinitialize nodes with proper configuration handling
     const reinitializedNodes = flowData.nodes.map((node) => {
-      // Extract the type from the node id (assumes id format like 'type_timestamp')
       const type = node.id.split("_")[0];
 
       try {
-        // Get the original block configuration
-        const config = getBlockConfig(type);
+        // Get base configuration
+        const baseConfig = getBlockConfig(type);
 
-        // Initialize ports and parameters
-        const initializedPorts = initializePortConfigs(config);
-        const initializedParams = initializeParams(config);
+        // Preserve existing port configurations while ensuring proper structure
+        const ports = {
+          inputs: {},
+          outputs: {},
+        };
 
-        // Merge existing node data with reinitialized configuration
+        // Handle input ports
+        Object.entries(node.data.config.ports.inputs || {}).forEach(
+          ([portName, portConfig]) => {
+            ports.inputs[portName] = {
+              width:
+                typeof portConfig.width === "number"
+                  ? portConfig.width
+                  : portConfig.width?.default || 32,
+              signed:
+                typeof portConfig.signed === "boolean"
+                  ? portConfig.signed
+                  : portConfig.signed?.default || false,
+            };
+          }
+        );
+
+        // Handle output ports
+        Object.entries(node.data.config.ports.outputs || {}).forEach(
+          ([portName, portConfig]) => {
+            ports.outputs[portName] = {
+              width:
+                typeof portConfig.width === "number"
+                  ? portConfig.width
+                  : portConfig.width?.default || 32,
+              signed:
+                typeof portConfig.signed === "boolean"
+                  ? portConfig.signed
+                  : portConfig.signed?.default || false,
+            };
+          }
+        );
+
+        // Preserve existing parameters or use defaults
+        const params = {};
+        Object.entries(baseConfig.params || {}).forEach(
+          ([paramName, paramConfig]) => {
+            const existingValue = node.data.params?.[paramName];
+            params[paramName] =
+              existingValue !== undefined ? existingValue : paramConfig.default;
+          }
+        );
+
         return {
           ...node,
           data: {
             ...node.data,
             config: {
-              ...config,
+              ...baseConfig,
               ...node.data.config,
-              ports: initializedPorts,
+              ports,
             },
+            params,
             name: node.data.name || `${type}${flowData.nodes.indexOf(node)}`,
-            params: initializedParams,
-            isHierarchical: type === "hierarchical",
-            internalNodes: node.data.internalNodes || [],
-            internalEdges: node.data.internalEdges || [],
             onParameterChange,
           },
         };
       } catch (error) {
-        console.error(`Could not reinitialize node of type ${type}:`, error);
+        console.error(`Error reinitializing node ${type}:`, error);
         return node;
       }
     });
+
     setNodes(reinitializedNodes);
     setEdges(flowData.edges);
     setModuleName(flowData.moduleName);
-    setHierarchicalBlocks(new Map(flowData.hierarchicalBlocks));
-    setFlowStack(flowData.flowStack);
-    setCurrentLevel(flowData.currentLevel);
+    if (flowData.hierarchicalBlocks) {
+      setHierarchicalBlocks(new Map(flowData.hierarchicalBlocks));
+    }
+    if (flowData.flowStack) {
+      setFlowStack(flowData.flowStack);
+      setCurrentLevel(flowData.currentLevel || 0);
+    }
   }, []);
 
   return {
