@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Keyboard } from "lucide-react";
 
 const KEYBOARD_SHORTCUTS = [
+  { key: "Ctrl/⌘ D", description: "generate HDL" },
   { key: "Space", description: "Fit view" },
   { key: "Ctrl/⌘ +", description: "Zoom in" },
   { key: "Ctrl/⌘ -", description: "Zoom out" },

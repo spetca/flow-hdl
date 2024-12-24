@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useReactFlow, getConnectedEdges } from "reactflow";
 
-export const useFlowKeyboardShortcuts = ({ setNodes, setEdges }) => {
+export const useFlowKeyboardShortcuts = ({
+  setNodes,
+  setEdges,
+  generateHDL,
+}) => {
   const { fitView, zoomIn, zoomOut, getNodes, getEdges, project } =
     useReactFlow();
 
@@ -26,6 +30,12 @@ export const useFlowKeyboardShortcuts = ({ setNodes, setEdges }) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "-") {
         event.preventDefault();
         zoomOut();
+      }
+
+      // Ctrl + D for generating HDL
+      if ((event.ctrlKey || event.metaKey) && event.key === "d") {
+        event.preventDefault();
+        generateHDL();
       }
 
       // Copy/Paste functionality
@@ -112,5 +122,6 @@ export const useFlowKeyboardShortcuts = ({ setNodes, setEdges }) => {
     project,
     setNodes,
     setEdges,
+    generateHDL,
   ]);
 };

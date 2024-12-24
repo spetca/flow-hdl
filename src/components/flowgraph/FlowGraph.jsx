@@ -26,9 +26,13 @@ const FlowGraph = ({
   currentSystem,
   navigateToParent,
   importFlow,
+  generateHDL,
 }) => {
-  // Use the keyboard shortcuts hook
-  useFlowKeyboardShortcuts({ setNodes, setEdges });
+  useFlowKeyboardShortcuts({
+    setNodes,
+    setEdges,
+    generateHDL,
+  });
 
   // Import default flow on component mount
   useEffect(() => {

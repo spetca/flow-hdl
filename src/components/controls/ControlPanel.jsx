@@ -20,7 +20,7 @@ const ControlPanel = ({
     >
       <div className="flex flex-wrap gap-2 items-center">
         <ModuleNameInput value={moduleName} onChange={setModuleName} />
-        <button onClick={generateHDL} className={buttonStyles}>
+        <button onClick={generateHDL} className={buttonStyles} title="Ctrl+D">
           Generate HDL
         </button>
         <button onClick={exportFlow} className={buttonStyles}>

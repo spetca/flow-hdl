@@ -7,6 +7,7 @@ export const useFileManager = (nodes, edges, moduleName) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const generateHDL = useCallback(() => {
+    console.log("generating....");
     // Create a flow graph JSON object
     const flowGraphJson = {
       nodes,

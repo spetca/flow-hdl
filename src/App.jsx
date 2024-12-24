@@ -131,6 +131,7 @@ const App = () => {
             currentSystem={currentSystem}
             navigateToParent={navigateToParent}
             importFlow={importFlow} // Explicitly pass importFlow here
+            generateHDL={handleGenerateHDL}
           />
 
           <KeyboardShortcuts
