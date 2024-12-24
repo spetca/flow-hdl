@@ -79,10 +79,10 @@ class SystemVerilogGenerator {
 
   generateWireDeclarations() {
     const wireDeclarations = new Set();
+    const assignDeclarations = new Set();
     const connections = this.findWiringConnections();
 
     connections.forEach((connection) => {
-      // Extract actual width and signed values
       const width =
         typeof connection.sourcePort.width === "number"
           ? connection.sourcePort.width
@@ -100,19 +100,24 @@ class SystemVerilogGenerator {
         connection.targetHandle
       );
 
+      // Add to wire declarations
       const wireDecl = `logic ${signed ? "signed " : ""}[${
         width - 1
       }:0] ${wireName};`;
       wireDeclarations.add(wireDecl);
 
+      // Add to assign declarations if it's an input port
       if (connection.sourceType === "inport") {
-        wireDeclarations.add(`assign ${wireName} = ${connection.sourceName};`);
+        assignDeclarations.add(
+          `assign ${wireName} = ${connection.sourceName};`
+        );
       }
     });
 
-    return Array.from(wireDeclarations).join("\n");
+    return `// Wire declarations\n${Array.from(wireDeclarations).join("\n")}
+  
+  // Assign declarations\n${Array.from(assignDeclarations).join("\n")}`;
   }
-
   findWiringConnections() {
     const connections = [];
     this.edges.forEach((edge) => {
@@ -171,9 +176,7 @@ class SystemVerilogGenerator {
               typeof port.width === "number"
                 ? port.width
                 : port.width?.default || 32;
-            portParams.push(
-              `        .${portName.toUpperCase()}_WIDTH(${width})`
-            );
+            portParams.push(`    .${portName.toUpperCase()}_WIDTH(${width})`);
           }
         );
 
@@ -183,9 +186,7 @@ class SystemVerilogGenerator {
               typeof port.width === "number"
                 ? port.width
                 : port.width?.default || 32;
-            portParams.push(
-              `        .${portName.toUpperCase()}_WIDTH(${width})`
-            );
+            portParams.push(`    .${portName.toUpperCase()}_WIDTH(${width})`);
           }
         );
 
@@ -193,7 +194,7 @@ class SystemVerilogGenerator {
         Object.entries(node.data.params || {}).forEach(([paramName, value]) => {
           const formattedValue =
             typeof value === "boolean" ? (value ? "1" : "0") : value;
-          portParams.push(`        .${paramName}(${formattedValue})`);
+          portParams.push(`    .${paramName}(${formattedValue})`);
         });
 
         const parameterList =
@@ -227,7 +228,7 @@ class SystemVerilogGenerator {
           portMappings.push("        .clk(clk)");
         }
 
-        return `    ${moduleType}${parameterList} ${instanceName} (\n${portMappings.join(
+        return `${moduleType}${parameterList} ${instanceName} (\n${portMappings.join(
           ",\n"
         )}\n    );`;
       })
@@ -264,13 +265,12 @@ class SystemVerilogGenerator {
   generate() {
     this.usedWireNames.clear();
 
-    const wireDeclarations = this.generateWireDeclarations();
+    const declarations = this.generateWireDeclarations();
     const moduleInstances = this.generateBlockInstances();
 
     this.files[`${this.moduleName}.sv`] = `${this.generateModuleHeader()}
 
-// Wire declarations
-${wireDeclarations}
+${declarations}
 
 // Module instances
 ${moduleInstances}
