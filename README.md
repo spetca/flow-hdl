@@ -6,6 +6,8 @@ The first goal of the project is to generate decent system verilog from complex 
 
 <img width="1403" alt="image" src="https://github.com/user-attachments/assets/1e67576d-22a9-4536-8217-d0025b2aba04" />
 
+## [DEMO - Not mobile friendly!](https://flow-hdl.netlify.app)
+
 ## why react/javascript
 
 You might be asking, "Why build this with web tech?" The answer is simple: Web technologies, especially tools like React, have a huge and active community of developers already familiar with them. By building this HDL/Verilog generation tool as a web app, I want to make it as accessible as possible to a wide range of developers so they can contribute and help improve the tool. It's all about creating an open, collaborative environment that allows us to make real progress in generating hardware descriptions from flowgraphs. Whether you're a hardware designer or just someone who's comfortable with web dev, this platform makes it easy to get involved and move the project forward.
@@ -25,12 +27,6 @@ You might be asking, "Why build this with web tech?" The answer is simple: Web t
 
 flow is in its **infancy** and any contribution is greatly appreciated - check out [how to contribute](#Contributing-Guide)
 
-## quickstart keyboard shortcuts
-
-- `spacebar` fits graph to view
-- `ctrl + -` zoom out
-- `ctrl + +` zoom in
-
 ## Flow is in its infancy!
 
 Please contribute if you are a web, react/vite, react flow, or HDL guru! We need a lot of help simplifying logic, components, and how blocks are created. this was bootstrapped with a lot of help from AI (sorry, im not a web dev by day) and will need some TLC to get to a sane state.
@@ -39,9 +35,9 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
 
 - [ ] more sane UI styling
 - [ ] decent appearance on mobile, although not super high priority
-- [ ] better user defined block experience. a web-laymen, but HDL expert, should be able to quickly add blocks via a well defined structure without much web-code overhead.
-- [ ] better editor features/styling (like resizing editor pane)
-- [ ] better block explorer pane that can be hidden
+- [x] better user defined block experience. a web-laymen, but HDL expert, should be able to quickly add blocks via a well defined structure without much web-code overhead.
+- [x] better editor features/styling (like resizing editor pane)
+- [x] better block explorer pane that can be hidden
 - [ ] better styling for react flow
   - [ ] highlight when wires clicks
   - [ ] better block appearance
@@ -52,8 +48,6 @@ Please contribute if you are a web, react/vite, react flow, or HDL guru! We need
   - [ ] blocks should highlight a connection red if an error occurs after connection (sign/bitwidth changes and does not match anymore)
   - [ ] clicking signed in dailogs doesnt propogate state correctly
 - [ ] hierarchy needs added, you should be able to create subsystems like in simulink. i.e. flowgraphs within flowgraphs
-
-## [DEMO](https://flow-hdl.netlify.app)
 
 # Concept
 
