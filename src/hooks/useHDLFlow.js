@@ -278,7 +278,43 @@ export const useHDLFlow = () => {
   }, [nodes, edges, moduleName, hierarchicalBlocks, flowStack, currentLevel]);
 
   const importFlow = useCallback((flowData) => {
-    setNodes(flowData.nodes);
+    // Reinitialize nodes similar to onDrop
+    const reinitializedNodes = flowData.nodes.map((node) => {
+      // Extract the type from the node id (assumes id format like 'type_timestamp')
+      const type = node.id.split("_")[0];
+
+      try {
+        // Get the original block configuration
+        const config = getBlockConfig(type);
+
+        // Initialize ports and parameters
+        const initializedPorts = initializePortConfigs(config);
+        const initializedParams = initializeParams(config);
+
+        // Merge existing node data with reinitialized configuration
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            config: {
+              ...config,
+              ...node.data.config,
+              ports: initializedPorts,
+            },
+            name: node.data.name || `${type}${flowData.nodes.indexOf(node)}`,
+            params: initializedParams,
+            isHierarchical: type === "hierarchical",
+            internalNodes: node.data.internalNodes || [],
+            internalEdges: node.data.internalEdges || [],
+            onParameterChange,
+          },
+        };
+      } catch (error) {
+        console.error(`Could not reinitialize node of type ${type}:`, error);
+        return node;
+      }
+    });
+    setNodes(reinitializedNodes);
     setEdges(flowData.edges);
     setModuleName(flowData.moduleName);
     setHierarchicalBlocks(new Map(flowData.hierarchicalBlocks));

@@ -22,11 +22,25 @@ export const useFileManager = (nodes, edges, moduleName) => {
     const jsonFileName = `${moduleName}.json`;
     const jsonFileContent = JSON.stringify(flowGraphJson, null, 2);
 
-    setGeneratedFiles({
+    // Create a new files object with the JSON file
+    const newFiles = {
       ...files,
       [jsonFileName]: jsonFileContent,
-    });
+    };
 
+    // Update generated files
+    setGeneratedFiles(newFiles);
+
+    // Reset selected file to the first generated file
+    const firstFileName = Object.keys(newFiles)[0];
+    if (firstFileName) {
+      setSelectedFile({
+        name: firstFileName,
+        content: newFiles[firstFileName],
+      });
+    }
+
+    // Open the drawer
     setIsDrawerOpen(true);
   }, [nodes, edges, moduleName]);
 

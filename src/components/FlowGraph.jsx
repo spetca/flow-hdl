@@ -25,6 +25,7 @@ const FlowGraph = ({
   onDragOver,
   currentSystem,
   navigateToParent,
+  importFlow,
 }) => {
   // Use the keyboard shortcuts hook
   useFlowKeyboardShortcuts({ setNodes, setEdges });
@@ -35,8 +36,8 @@ const FlowGraph = ({
       try {
         const defaultFlowModule = await import("../assets/default_flow.json");
         if (defaultFlowModule.default) {
-          setNodes(defaultFlowModule.default.nodes || []);
-          setEdges(defaultFlowModule.default.edges || []);
+          // Use importFlow instead of directly setting nodes and edges
+          importFlow(defaultFlowModule.default);
         }
       } catch (error) {
         console.error("Error importing default flow:", error);
@@ -46,7 +47,7 @@ const FlowGraph = ({
     };
 
     importDefaultFlow();
-  }, [setNodes, setEdges]);
+  }, [importFlow, setNodes, setEdges]);
 
   return (
     <ReactFlow

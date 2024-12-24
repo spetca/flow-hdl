@@ -137,11 +137,11 @@
       "dragging": false
     },
     {
-      "id": "delay_1734990021928",
+      "id": "delay_1735003985976",
       "type": "hdlNode",
       "position": {
-        "x": 450.38395877336905,
-        "y": 156.49000803448422
+        "x": 502.6666666666667,
+        "y": 151.1515340972348
       },
       "data": {
         "config": {
@@ -151,7 +151,7 @@
           "description": "Delays input signal by specified number of clock cycles",
           "params": {
             "DELAY": {
-              "default": 1
+              "default": 20
             }
           },
           "ports": {
@@ -169,9 +169,9 @@
             }
           }
         },
-        "name": "delay3",
+        "name": "delay",
         "params": {
-          "DELAY": 1
+          "DELAY": 20
         },
         "isHierarchical": false,
         "internalNodes": [],
@@ -179,10 +179,10 @@
       },
       "width": 200,
       "height": 150,
-      "selected": false,
+      "selected": true,
       "positionAbsolute": {
-        "x": 450.38395877336905,
-        "y": 156.49000803448422
+        "x": 502.6666666666667,
+        "y": 151.1515340972348
       },
       "dragging": false
     }
@@ -213,7 +213,19 @@
       "id": "reactflow__edge-inport_1734979785564out-adder_1734989972142b"
     },
     {
-      "source": "delay_1734990021928",
+      "source": "adder_1734989972142",
+      "sourceHandle": "sum",
+      "target": "delay_1735003985976",
+      "targetHandle": "in",
+      "type": "bezier",
+      "animated": true,
+      "style": {
+        "stroke": "#333"
+      },
+      "id": "reactflow__edge-adder_1734989972142sum-delay_1735003985976in"
+    },
+    {
+      "source": "delay_1735003985976",
       "sourceHandle": "out",
       "target": "outport_1734979786996",
       "targetHandle": "in",
@@ -222,19 +234,7 @@
       "style": {
         "stroke": "#333"
       },
-      "id": "reactflow__edge-delay_1734990021928out-outport_1734979786996in"
-    },
-    {
-      "source": "adder_1734989972142",
-      "sourceHandle": "sum",
-      "target": "delay_1734990021928",
-      "targetHandle": "in",
-      "type": "bezier",
-      "animated": true,
-      "style": {
-        "stroke": "#333"
-      },
-      "id": "reactflow__edge-adder_1734989972142sum-delay_1734990021928in"
+      "id": "reactflow__edge-delay_1735003985976out-outport_1734979786996in"
     }
   ],
   "moduleName": "top_module",

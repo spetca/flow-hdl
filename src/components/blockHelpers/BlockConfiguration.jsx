@@ -2,15 +2,23 @@ import React, { useState, useEffect } from "react";
 import { NodeToolbar } from "reactflow";
 
 const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
-  const { config, name: blockName } = data;
+  const { config, name: blockName, ...restData } = data;
   const [name, setName] = useState(blockName || "");
-  const [portConfig, setPortConfig] = useState({
+
+  // Deep clone config to avoid direct mutations
+  const [portConfig, setPortConfig] = useState(() => ({
     inputs: Object.fromEntries(
       Object.entries(config.ports.inputs || {}).map(([name, port]) => [
         name,
         {
-          width: port.width?.default || port.width || 32,
-          signed: port.signed?.default || port.signed || false,
+          width:
+            typeof port.width === "object"
+              ? port.width.default || port.width.value || 32
+              : port.width || 32,
+          signed:
+            typeof port.signed === "object"
+              ? port.signed.default || port.signed.value || false
+              : port.signed || false,
         },
       ])
     ),
@@ -18,28 +26,56 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
       Object.entries(config.ports.outputs || {}).map(([name, port]) => [
         name,
         {
-          width: port.width?.default || port.width || 32,
-          signed: port.signed?.default || port.signed || false,
+          width:
+            typeof port.width === "object"
+              ? port.width.default || port.width.value || 32
+              : port.width || 32,
+          signed:
+            typeof port.signed === "object"
+              ? port.signed.default || port.signed.value || false
+              : port.signed || false,
         },
       ])
     ),
-  });
+  }));
 
-  const [paramConfig, setParamConfig] = useState({
-    ...config.params,
-  });
+  // Handle params more robustly
+  const [paramConfig, setParamConfig] = useState(() =>
+    Object.fromEntries(
+      Object.entries(config.params || {}).map(([key, param]) => [
+        key,
+        {
+          ...param,
+          default:
+            param.default !== undefined
+              ? param.default
+              : param.type === "boolean"
+              ? false
+              : 0,
+        },
+      ])
+    )
+  );
 
+  // Reset state when modal opens
   useEffect(() => {
-    setName(blockName || "");
-    // Reset configs when opened
     if (isOpen) {
+      setName(blockName || "");
+
+      // Reset port configurations
       setPortConfig({
         inputs: Object.fromEntries(
           Object.entries(config.ports.inputs || {}).map(([name, port]) => [
             name,
             {
-              width: port.width?.default || port.width || 32,
-              signed: port.signed?.default || port.signed || false,
+              width:
+                typeof port.width === "object"
+                  ? port.width.default || port.width.value || 32
+                  : port.width || 32,
+              signed:
+                typeof port.signed === "object"
+                  ? port.signed.default || port.signed.value || false
+                  : port.signed || false,
             },
           ])
         ),
@@ -47,29 +83,91 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
           Object.entries(config.ports.outputs || {}).map(([name, port]) => [
             name,
             {
-              width: port.width?.default || port.width || 32,
-              signed: port.signed?.default || port.signed || false,
+              width:
+                typeof port.width === "object"
+                  ? port.width.default || port.width.value || 32
+                  : port.width || 32,
+              signed:
+                typeof port.signed === "object"
+                  ? port.signed.default || port.signed.value || false
+                  : port.signed || false,
             },
           ])
         ),
       });
-      setParamConfig({ ...config.params });
+
+      // Reset parameter configurations
+      setParamConfig(
+        Object.fromEntries(
+          Object.entries(config.params || {}).map(([key, param]) => [
+            key,
+            {
+              ...param,
+              default:
+                param.default !== undefined
+                  ? param.default
+                  : param.type === "boolean"
+                  ? false
+                  : 0,
+            },
+          ])
+        )
+      );
     }
   }, [isOpen, config, blockName]);
 
   const handleSave = () => {
+    // Construct comprehensive update object
     const updates = {
-      ports: portConfig,
       name: name || config.name,
+      config: {
+        ...config,
+        name: name || config.name,
+        ports: {
+          inputs: Object.fromEntries(
+            Object.entries(portConfig.inputs).map(([name, port]) => [
+              name,
+              {
+                width: { default: port.width },
+                signed: { default: port.signed },
+              },
+            ])
+          ),
+          outputs: Object.fromEntries(
+            Object.entries(portConfig.outputs).map(([name, port]) => [
+              name,
+              {
+                width: { default: port.width },
+                signed: { default: port.signed },
+              },
+            ])
+          ),
+        },
+        params: Object.fromEntries(
+          Object.entries(paramConfig).map(([key, value]) => [
+            key,
+            {
+              ...config.params[key],
+              default: value.default,
+            },
+          ])
+        ),
+      },
+      params: Object.fromEntries(
+        Object.entries(paramConfig).map(([key, value]) => [key, value.default])
+      ),
+      ports: {
+        inputs: portConfig.inputs,
+        outputs: portConfig.outputs,
+      },
     };
 
-    if (Object.keys(config.params || {}).length > 0) {
-      updates.params = Object.fromEntries(
-        Object.entries(paramConfig).map(([key, value]) => [key, value.default])
-      );
-    }
+    console.log("Saving updates:", updates);
 
+    // Call update method
     onUpdate(updates);
+
+    // Close modal
     onClose();
   };
 
@@ -122,7 +220,10 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
                       onChange={(e) =>
                         setParamConfig((prev) => ({
                           ...prev,
-                          [name]: { ...prev[name], default: e.target.checked },
+                          [name]: {
+                            ...prev[name],
+                            default: e.target.checked,
+                          },
                         }))
                       }
                       className="rounded border-gray-300"

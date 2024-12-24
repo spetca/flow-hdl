@@ -130,6 +130,7 @@ const App = () => {
             onDragOver={onDragOver}
             currentSystem={currentSystem}
             navigateToParent={navigateToParent}
+            importFlow={importFlow} // Explicitly pass importFlow here
           />
 
           <KeyboardShortcuts

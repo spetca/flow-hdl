@@ -16,6 +16,50 @@ const HDLNode = ({ data, id, selected }) => {
     return { width: 200, height: 150 };
   });
 
+  // Normalize config to ensure consistent structure
+  const normalizeConfig = (config) => {
+    const normalizedConfig = { ...config };
+
+    // Normalize ports
+    if (normalizedConfig.ports) {
+      ["inputs", "outputs"].forEach((portType) => {
+        if (normalizedConfig.ports[portType]) {
+          Object.keys(normalizedConfig.ports[portType]).forEach((portName) => {
+            const port = normalizedConfig.ports[portType][portName];
+
+            // Ensure width is an object with default
+            if (typeof port.width !== "object") {
+              port.width = { default: port.width || 32 };
+            }
+
+            // Ensure signed is an object with default
+            if (typeof port.signed !== "object") {
+              port.signed = { default: port.signed || false };
+            }
+          });
+        }
+      });
+    }
+
+    // Normalize params
+    if (normalizedConfig.params) {
+      Object.keys(normalizedConfig.params).forEach((paramName) => {
+        const param = normalizedConfig.params[paramName];
+
+        // If param is not an object, convert it to an object with default
+        if (typeof param !== "object") {
+          normalizedConfig.params[paramName] = { default: param };
+        }
+        // Ensure default exists
+        if (param && param.default === undefined) {
+          param.default = param.type === "boolean" ? false : 0;
+        }
+      });
+    }
+
+    return normalizedConfig;
+  };
+
   // Get shape-specific styles
   const getShapeStyles = () => {
     const baseStyles = {
@@ -94,29 +138,43 @@ const HDLNode = ({ data, id, selected }) => {
   };
 
   const handleUpdate = (updates) => {
-    const { params = {}, ports = currentConfig.ports, name } = updates;
-
-    const newConfig = {
-      ...currentConfig,
-      ports,
-      params: {
-        ...currentConfig.params,
-        ...Object.fromEntries(
-          Object.entries(params).map(([key, value]) => [
-            key,
-            { default: value },
-          ])
-        ),
+    // Normalize the updates
+    const normalizedUpdates = {
+      name: updates.name || currentConfig.name,
+      config: {
+        ...currentConfig,
+        name: updates.name || currentConfig.name,
+        ports: updates.ports || currentConfig.ports,
+        params: updates.config?.params || currentConfig.params,
       },
+      params: updates.params || {},
     };
 
-    setCurrentConfig(newConfig);
-    onParameterChange(id, {
-      config: newConfig,
-      params,
-      name,
-    });
+    // Convert params to correct structure
+    if (normalizedUpdates.config.params) {
+      normalizedUpdates.config.params = Object.fromEntries(
+        Object.entries(normalizedUpdates.config.params).map(([key, value]) => [
+          key,
+          typeof value === "object"
+            ? { ...value, default: value.default }
+            : { default: value },
+        ])
+      );
+    }
+
+    console.log("Normalized Updates:", normalizedUpdates);
+
+    // Update local state
+    setCurrentConfig(normalizedUpdates.config);
+
+    // Call parameter change with normalized updates
+    onParameterChange(id, normalizedUpdates);
   };
+
+  // Use normalized config for state
+  useEffect(() => {
+    setCurrentConfig(normalizeConfig(config));
+  }, [config]);
 
   // Calculate port positions with even distribution and spacing
   const calculatePortPosition = (index, total) => {
