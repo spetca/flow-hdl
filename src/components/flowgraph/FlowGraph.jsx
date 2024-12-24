@@ -6,8 +6,8 @@ import ReactFlow, {
   SelectionMode,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import HDLNode from "./blockHelpers/HDLNode";
-import { useFlowKeyboardShortcuts } from "../hooks/useFlowKeyboardShortcuts";
+import HDLNode from "./hdlnode/HDLNode";
+import { useFlowKeyboardShortcuts } from "./hooks/useFlowKeyboardShortcuts";
 
 const nodeTypes = {
   hdlNode: HDLNode,
@@ -34,7 +34,9 @@ const FlowGraph = ({
   useEffect(() => {
     const importDefaultFlow = async () => {
       try {
-        const defaultFlowModule = await import("../assets/default_flow.json");
+        const defaultFlowModule = await import(
+          "../../assets/default_flow.json"
+        );
         if (defaultFlowModule.default) {
           // Use importFlow instead of directly setting nodes and edges
           importFlow(defaultFlowModule.default);

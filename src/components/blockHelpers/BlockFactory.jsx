@@ -1,6 +1,6 @@
 // blockFactory.js
 import React from "react";
-import HDLNode from "../blockHelpers/HDLNode";
+import HDLNode from "../flowgraph/hdlnode/HDLNode";
 
 // Helper to generate dynamic config based on port parameters
 const createDynamicConfig = (baseConfig, props) => {

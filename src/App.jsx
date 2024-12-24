@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from "react";
 import { Library, Keyboard } from "lucide-react";
-import FlowGraph from "./components/FlowGraph";
+import FlowGraph from "./components/flowgraph/FlowGraph";
 import BlockLibrary from "./components/BlockLibrary";
-import KeyboardShortcuts from "./components/KeyboardShortcuts";
-import ControlPanel from "./components/ControlPanel";
-import FileDrawer from "./components/FileDrawer";
+import KeyboardShortcuts from "./components/controls/KeyboardShortcuts";
+import ControlPanel from "./components/controls/ControlPanel";
+import FileDrawer from "./components/file/FileDrawer";
 import { ReactFlowProvider } from "reactflow";
-import { useHDLFlow } from "./hooks/useHDLFlow";
+import { useHDLFlow } from "./components/flowgraph/hooks/useHDLFlow";
 import { useFileManager } from "./hooks/useFileManager";
 
 const App = () => {

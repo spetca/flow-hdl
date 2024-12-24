@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect } from "react";
 import { Handle, Position } from "reactflow";
-import BlockConfiguration from "./BlockConfiguration";
+import BlockConfiguration from "../../configuration/BlockConfiguration";
 
 const HDLNode = ({ data, id, selected }) => {
   const { config, onParameterChange } = data;

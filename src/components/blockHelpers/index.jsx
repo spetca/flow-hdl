@@ -4,8 +4,8 @@ import MultiplierBlock from "../blocks/Multiplier";
 import InPortBlock from "../blocks/InPort";
 import OutPortBlock from "../blocks/OutPort";
 import DelayBlock from "../blocks/Delay";
-import HDLNode from "./HDLNode";
-import BlockConfiguration from "./BlockConfiguration";
+import HDLNode from "../flowgraph/hdlnode/HDLNode";
+import BlockConfiguration from "../configuration/BlockConfiguration";
 
 // Block type constants
 export const BlockTypes = {

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNodesState, useEdgesState, addEdge } from "reactflow";
-import { getBlockConfig } from "../components/blockHelpers";
+import { getBlockConfig } from "../../blockHelpers";
 
 export const useHDLFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
