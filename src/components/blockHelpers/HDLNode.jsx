@@ -29,12 +29,20 @@ const HDLNode = ({ data, id, selected }) => {
 
             // Ensure width is an object with default
             if (typeof port.width !== "object") {
-              port.width = { default: port.width || 32 };
+              port.width = {
+                default: port.width === undefined ? 32 : port.width,
+              };
             }
 
-            // Ensure signed is an object with default
-            if (typeof port.signed !== "object") {
-              port.signed = { default: port.signed || false };
+            if (typeof port.signed === "object") {
+              // If it's already an object, ensure it has a `default` property
+              port.signed.default =
+                port.signed.default === undefined ? false : port.signed.default;
+            } else {
+              // If it's not an object, wrap it in one
+              port.signed = {
+                default: port.signed === undefined ? false : port.signed,
+              };
             }
           });
         }
@@ -211,14 +219,15 @@ const HDLNode = ({ data, id, selected }) => {
   // Helper to get port display values
   const getPortDisplayValues = (port) => {
     const width = port.width?.default || port.width || 32;
-    const signed = port.signed?.default || port.signed || false;
+    const signed =
+      typeof port.signed === "object" ? port.signed.default : !!port.signed;
+    console.log("shane debug w/s getportdis", width, signed);
     return { width, signed };
   };
 
   const renderPorts = () => {
     const inputPorts = Object.entries(currentConfig.ports.inputs || {});
     const outputPorts = Object.entries(currentConfig.ports.outputs || {});
-    const isSpecialShape = currentConfig.shape?.type === "oval";
 
     return (
       <>
@@ -311,16 +320,29 @@ const HDLNode = ({ data, id, selected }) => {
         >
           <div className="font-bold">{data.name || currentConfig.name}</div>
           {isSpecialShape &&
-            Object.entries(currentConfig.ports.inputs || {}).map(
-              ([portId, port]) => {
-                const { width, signed } = getPortDisplayValues(port);
-                return (
-                  <div key={portId} className="text-sm mt-1">
-                    [{width - 1}:0]{signed && "(s)"}
-                  </div>
-                );
-              }
-            )}
+            (currentConfig.type === "inport"
+              ? Object.entries(currentConfig.ports.outputs || {}).map(
+                  ([portId, port]) => {
+                    const { width, signed } = getPortDisplayValues(port);
+                    return (
+                      <div key={`output-${portId}`} className="text-sm mt-1">
+                        [{width - 1}:0]{signed && "(s)"}
+                      </div>
+                    );
+                  }
+                )
+              : currentConfig.type === "outport"
+              ? Object.entries(currentConfig.ports.inputs || {}).map(
+                  ([portId, port]) => {
+                    const { width, signed } = getPortDisplayValues(port);
+                    return (
+                      <div key={`input-${portId}`} className="text-sm mt-1">
+                        [{width - 1}:0]{signed && "(s)"}
+                      </div>
+                    );
+                  }
+                )
+              : null)}
         </div>
 
         {/* Main Parameter Display */}

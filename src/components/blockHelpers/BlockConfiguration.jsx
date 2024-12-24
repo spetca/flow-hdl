@@ -11,14 +11,18 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
       Object.entries(config.ports.inputs || {}).map(([name, port]) => [
         name,
         {
-          width:
-            typeof port.width === "object"
-              ? port.width.default || port.width.value || 32
-              : port.width || 32,
-          signed:
-            typeof port.signed === "object"
-              ? port.signed.default || port.signed.value || false
-              : port.signed || false,
+          width: {
+            default:
+              typeof port.width === "object"
+                ? port.width.default || port.width.value || 32
+                : port.width || 32,
+          },
+          signed: {
+            default:
+              typeof port.signed === "object"
+                ? port.signed.default || port.signed.value || false
+                : port.signed || false,
+          },
         },
       ])
     ),
@@ -26,14 +30,18 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
       Object.entries(config.ports.outputs || {}).map(([name, port]) => [
         name,
         {
-          width:
-            typeof port.width === "object"
-              ? port.width.default || port.width.value || 32
-              : port.width || 32,
-          signed:
-            typeof port.signed === "object"
-              ? port.signed.default || port.signed.value || false
-              : port.signed || false,
+          width: {
+            default:
+              typeof port.width === "object"
+                ? port.width.default || port.width.value || 32
+                : port.width || 32,
+          },
+          signed: {
+            default:
+              typeof port.signed === "object"
+                ? port.signed.default || port.signed.value || false
+                : port.signed || false,
+          },
         },
       ])
     ),
@@ -128,8 +136,8 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
             Object.entries(portConfig.inputs).map(([name, port]) => [
               name,
               {
-                width: { default: port.width },
-                signed: { default: port.signed },
+                width: { default: Number(port.width) },
+                signed: { default: Boolean(port.signed) },
               },
             ])
           ),
@@ -137,8 +145,8 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
             Object.entries(portConfig.outputs).map(([name, port]) => [
               name,
               {
-                width: { default: port.width },
-                signed: { default: port.signed },
+                width: { default: Number(port.width) },
+                signed: { default: Boolean(port.signed) },
               },
             ])
           ),
