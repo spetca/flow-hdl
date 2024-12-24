@@ -45,7 +45,15 @@ export const useFlowKeyboardShortcuts = ({
           const selectedNodes = getNodes().filter((node) => node.selected);
           if (selectedNodes.length === 0) return;
 
-          const selectedEdges = getConnectedEdges(selectedNodes, getEdges());
+          // Only include edges where both source and target nodes are selected
+          const selectedEdges = getConnectedEdges(
+            selectedNodes,
+            getEdges()
+          ).filter(
+            (edge) =>
+              selectedNodes.some((node) => node.id === edge.source) &&
+              selectedNodes.some((node) => node.id === edge.target)
+          );
 
           const clipboard = {
             nodes: selectedNodes.map((node) => ({
@@ -79,6 +87,18 @@ export const useFlowKeyboardShortcuts = ({
                 y: node.position.y + 50,
               });
 
+              // Create a new name for the copied node
+              const existingNodes = getNodes();
+              const baseNodeName = node.data.config.type;
+              let nameCounter = existingNodes.length;
+              let newNodeName;
+
+              // Keep incrementing counter until we find a unique name
+              do {
+                newNodeName = `${baseNodeName}${nameCounter}`;
+                nameCounter++;
+              } while (existingNodes.some((n) => n.data.name === newNodeName));
+
               return {
                 ...node,
                 id: newId,
@@ -86,21 +106,24 @@ export const useFlowKeyboardShortcuts = ({
                 selected: false,
                 data: {
                   ...node.data,
-                  name: `${node.data.config.type}${getNodes().length}`,
+                  name: newNodeName,
+                  // Reset any connection-specific data
+                  connections: [],
                 },
               };
             });
 
-            // Create new edges with updated node references
-            const newEdges = clipboard.edges.map((edge) => ({
-              ...edge,
-              id: `${edge.type}_${now}_${Math.random()
-                .toString(36)
-                .substr(2, 9)}`,
-              source: idMap[edge.source],
-              target: idMap[edge.target],
-              selected: false,
-            }));
+            // Only create edges if we copied multiple nodes
+            let newEdges = [];
+            if (clipboard.nodes.length > 1) {
+              newEdges = clipboard.edges.map((edge) => ({
+                ...edge,
+                id: `edge_${now}_${Math.random().toString(36).substr(2, 9)}`,
+                source: idMap[edge.source],
+                target: idMap[edge.target],
+                selected: false,
+              }));
+            }
 
             setNodes((nodes) => [...nodes, ...newNodes]);
             setEdges((edges) => [...edges, ...newEdges]);
