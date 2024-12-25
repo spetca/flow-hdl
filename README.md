@@ -10,7 +10,11 @@ The first goal of the project is to generate decent system verilog from complex 
 
 ## why react/javascript
 
-You might be asking, "Why build this with web tech?" The answer is simple: Web technologies, especially tools like React, have a huge and active community of developers already familiar with them. By building this HDL/Verilog generation tool as a web app, I want to make it as accessible as possible to a wide range of developers so they can contribute and help improve the tool. It's all about creating an open, collaborative environment that allows us to make real progress in generating hardware descriptions from flowgraphs. Whether you're a hardware designer or just someone who's comfortable with web dev, this platform makes it easy to get involved and move the project forward.
+You might be asking, "Why build this with web tech?"
+
+1. web technologies, especially tools like React, have a huge and active community of developers already familiar with them.
+2. easier to make complex UIs using cool libraries like reactflow
+3. cross platform
 
 ## What it can do
 
