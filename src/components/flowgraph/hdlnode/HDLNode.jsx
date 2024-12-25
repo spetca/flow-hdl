@@ -53,21 +53,35 @@ const HDLNode = ({ data, id, selected }) => {
     setIsConfigOpen(true);
   }, []);
 
+  const handleSubflowDoubleClick = useCallback(
+    (e) => {
+      if (data.isSubflow && data.onNavigateToSubflow) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("going in");
+        data.onNavigateToSubflow(id, data.name);
+      } else {
+        handleDoubleClick(e);
+      }
+    },
+    [data, id, handleDoubleClick]
+  );
+  
   const handleUpdate = useCallback(
     (updates) => {
-      const normalizedUpdates = {
-        name: updates.name || currentConfig.name,
-        config: normalizeConfig({
-          ...currentConfig,
-          name: updates.name || currentConfig.name,
-          ports: updates.ports || currentConfig.ports,
-          params: updates.config?.params || currentConfig.params,
-        }),
-        params: updates.params || {},
-      };
+      const normalizedConfig = normalizeConfig({
+        ...currentConfig,
+        name: updates.name,
+        ports: updates.config.ports, // Updates weren't being applied correctly here
+        params: updates.config.params,
+      });
 
-      setCurrentConfig(normalizedUpdates.config);
-      onParameterChange(id, normalizedUpdates);
+      setCurrentConfig(normalizedConfig);
+      onParameterChange(id, {
+        name: updates.name,
+        config: normalizedConfig,
+        params: updates.params,
+      });
     },
     [currentConfig, id, onParameterChange]
   );
@@ -84,15 +98,22 @@ const HDLNode = ({ data, id, selected }) => {
         config={currentConfig}
         selected={selected}
         nodeSize={nodeSize}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={
+          data.isSubflow ? handleSubflowDoubleClick : handleDoubleClick
+        }
       >
+        {/* ... existing node content ... */}
+        {data.isSubflow && (
+          <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+            Double-click to open
+          </div>
+        )}
         <NodeTitle
           config={currentConfig}
           name={data.name}
           isSpecialShape={isSpecialShape}
           shapeStyles={getShapeStyles(nodeSize, currentConfig)}
         />
-        {!isSpecialShape && <NodeParameters config={currentConfig} />}
         <NodePorts config={currentConfig} isSpecialShape={isSpecialShape} />
       </NodeShape>
 

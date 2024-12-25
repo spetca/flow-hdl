@@ -7,16 +7,25 @@ const ControlPanel = ({
   setModuleName,
   generateHDL,
   exportFlow,
-  setShowClearConfirmation,
+  clearGraph,
   importFlow,
 }) => {
   const buttonStyles =
     "px-3 py-1.5 bg-white border border-black/80 rounded text-sm font-medium hover:bg-black hover:text-white transition-colors duration-200";
 
+  const handleClearGraph = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to clear the graph? This cannot be undone."
+      )
+    ) {
+      clearGraph();
+    }
+  };
   return (
     <Panel
       position="top-left"
-      className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm z-10"
+      className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm mt-12" // Added mt-12 for margin-top
     >
       <div className="flex flex-wrap gap-2 items-center">
         <ModuleNameInput value={moduleName} onChange={setModuleName} />
@@ -27,7 +36,7 @@ const ControlPanel = ({
           Export Flow
         </button>
         <button
-          onClick={() => setShowClearConfirmation(true)}
+          onClick={() => handleClearGraph(true)}
           className={buttonStyles}
         >
           Clear Graph

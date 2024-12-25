@@ -72,7 +72,8 @@ export const createInitializedNode = ({
   config,
   name,
   onParameterChange,
-  isHierarchical = false,
+  onNavigateToSubflow,
+  isSubflow = false,
 }) => {
   const initializedPorts = initializePortConfigs(config);
   const initializedParams = initializeParams(config);
@@ -88,10 +89,11 @@ export const createInitializedNode = ({
       },
       name,
       params: initializedParams,
-      isHierarchical,
+      isSubflow,
       internalNodes: [],
       internalEdges: [],
       onParameterChange,
+      onNavigateToSubflow,
     },
   };
 };

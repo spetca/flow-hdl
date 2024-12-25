@@ -11,31 +11,77 @@ export const useHDLFlow = () => {
     { id: "top", name: "Top Level", nodes: [], edges: [] },
   ]);
   const [currentLevel, setCurrentLevel] = useState(0);
+  const [subflowStack, setSubflowStack] = useState([]);
+  const [currentSubflowId, setCurrentSubflowId] = useState(null);
   const [hierarchicalBlocks, setHierarchicalBlocks] = useState(new Map());
+  const [parentState, setParentState] = useState(null);
 
   const currentSystem = flowStack[currentLevel];
+
+  const onNavigateToSubflow = useCallback(
+    (subflowId, subflowName) => {
+      console.log("Navigating to subflow:", { subflowId, subflowName });
+
+      // Save the current (parent) state with all node data preserved
+      setParentState({
+        nodes: nodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            onNavigateToSubflow,
+            isSubflow: node.id.split("_")[0] === "subflow",
+          },
+        })),
+        edges: [...edges],
+      });
+
+      // Get or create subflow state
+      const subflowState = hierarchicalBlocks.get(subflowId) || {
+        nodes: [],
+        edges: [],
+        ports: {},
+      };
+
+      console.log("Loading subflow state:", subflowState);
+
+      // Update stack and set new state
+      setSubflowStack((prev) => [
+        ...prev,
+        { id: subflowId, name: subflowName },
+      ]);
+      setCurrentSubflowId(subflowId);
+      setNodes(subflowState.nodes);
+      setEdges(subflowState.edges);
+    },
+    [nodes, edges, hierarchicalBlocks]
+  );
 
   const onParameterChange = useCallback((nodeId, updates) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nodeId) {
+          // Create updated node
           const newNode = {
             ...node,
             data: {
               ...node.data,
+              name: updates.name,
               config: updates.config,
               params: updates.params,
-              name: updates.name,
+              onParameterChange, // Important to preserve these
+              onNavigateToSubflow: node.data.onNavigateToSubflow,
+              isSubflow: node.data.isSubflow,
             },
           };
 
-          if (node.data.isHierarchical && updates.ports) {
+          // Handle subflow updates if needed
+          if (node.data.isSubflow && updates.config.ports) {
             setHierarchicalBlocks((prev) => {
               const blockData = prev.get(nodeId) || { nodes: [], edges: [] };
               return new Map(
                 prev.set(nodeId, {
                   ...blockData,
-                  ports: updates.ports,
+                  ports: updates.config.ports,
                 })
               );
             });
@@ -162,7 +208,8 @@ export const useHDLFlow = () => {
     (event) => {
       event.preventDefault();
       const type = event.dataTransfer.getData("application/json");
-      const isHierarchical = type === "hierarchical";
+      console.log("type of block:", type);
+      const isSubflow = type === "subflow";
       const reactFlowBounds = event.target
         .closest(".react-flow")
         .getBoundingClientRect();
@@ -182,10 +229,11 @@ export const useHDLFlow = () => {
         config,
         name: nodeName,
         onParameterChange,
-        isHierarchical,
+        isSubflow,
+        onNavigateToSubflow,
       });
 
-      if (isHierarchical) {
+      if (isSubflow) {
         const initializedPorts = newNode.data.config.ports;
         setHierarchicalBlocks(
           (prev) =>
@@ -201,7 +249,7 @@ export const useHDLFlow = () => {
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [nodes, onParameterChange]
+    [nodes, onParameterChange, onNavigateToSubflow] // Added onNavigateToSubflow to dependencies
   );
 
   const onDragOver = useCallback((event) => {
@@ -243,6 +291,52 @@ export const useHDLFlow = () => {
     setEdges(parentLevel.edges);
   }, [currentLevel, nodes, edges, flowStack]);
 
+  const onNavigateBack = useCallback(() => {
+    if (!currentSubflowId || subflowStack.length === 0) return;
+
+    console.log("Navigating back from subflow:", currentSubflowId);
+
+    // Save current subflow state
+    setHierarchicalBlocks((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(currentSubflowId, {
+        nodes: [...nodes],
+        edges: [...edges],
+        ports: prev.get(currentSubflowId)?.ports || {},
+      });
+      return newMap;
+    });
+
+    // Restore parent state with navigation functions
+    if (parentState) {
+      console.log("Restoring parent state:", parentState);
+      setNodes(
+        parentState.nodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            onNavigateToSubflow,
+            onParameterChange,
+          },
+        }))
+      );
+      setEdges(parentState.edges);
+    }
+
+    // Update navigation state
+    setSubflowStack((prev) => prev.slice(0, -1));
+    setCurrentSubflowId(null);
+    setParentState(null);
+  }, [
+    nodes,
+    edges,
+    currentSubflowId,
+    subflowStack,
+    parentState,
+    onNavigateToSubflow,
+    onParameterChange,
+  ]);
+
   const exportFlow = useCallback(() => {
     const flowData = {
       nodes,
@@ -266,94 +360,106 @@ export const useHDLFlow = () => {
     URL.revokeObjectURL(url);
   }, [nodes, edges, moduleName, hierarchicalBlocks, flowStack, currentLevel]);
 
-  const importFlow = useCallback((flowData) => {
-    // Reinitialize nodes with proper configuration handling
-    const reinitializedNodes = flowData.nodes.map((node) => {
-      const type = node.id.split("_")[0];
-
-      try {
-        // Get base configuration
-        const baseConfig = getBlockConfig(type);
-
-        // Preserve existing port configurations while ensuring proper structure
-        const ports = {
-          inputs: {},
-          outputs: {},
-        };
-
-        // Handle input ports
-        Object.entries(node.data.config.ports.inputs || {}).forEach(
-          ([portName, portConfig]) => {
-            ports.inputs[portName] = {
-              width:
-                typeof portConfig.width === "number"
-                  ? portConfig.width
-                  : portConfig.width?.default || 32,
-              signed:
-                typeof portConfig.signed === "boolean"
-                  ? portConfig.signed
-                  : portConfig.signed?.default || false,
-            };
-          }
-        );
-
-        // Handle output ports
-        Object.entries(node.data.config.ports.outputs || {}).forEach(
-          ([portName, portConfig]) => {
-            ports.outputs[portName] = {
-              width:
-                typeof portConfig.width === "number"
-                  ? portConfig.width
-                  : portConfig.width?.default || 32,
-              signed:
-                typeof portConfig.signed === "boolean"
-                  ? portConfig.signed
-                  : portConfig.signed?.default || false,
-            };
-          }
-        );
-
-        // Preserve existing parameters or use defaults
-        const params = {};
-        Object.entries(baseConfig.params || {}).forEach(
-          ([paramName, paramConfig]) => {
-            const existingValue = node.data.params?.[paramName];
-            params[paramName] =
-              existingValue !== undefined ? existingValue : paramConfig.default;
-          }
-        );
-
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            config: {
-              ...baseConfig,
-              ...node.data.config,
-              ports,
-            },
-            params,
-            name: node.data.name || `${type}${flowData.nodes.indexOf(node)}`,
-            onParameterChange,
-          },
-        };
-      } catch (error) {
-        console.error(`Error reinitializing node ${type}:`, error);
-        return node;
-      }
-    });
-
-    setNodes(reinitializedNodes);
-    setEdges(flowData.edges);
-    setModuleName(flowData.moduleName);
-    if (flowData.hierarchicalBlocks) {
-      setHierarchicalBlocks(new Map(flowData.hierarchicalBlocks));
-    }
-    if (flowData.flowStack) {
-      setFlowStack(flowData.flowStack);
-      setCurrentLevel(flowData.currentLevel || 0);
-    }
+  // Update clearGraph function
+  const clearGraph = useCallback(() => {
+    // Reset everything to initial state
+    setNodes([]);
+    setEdges([]);
+    setModuleName("top_module");
+    setFlowStack([{ id: "top", name: "Top Level", nodes: [], edges: [] }]);
+    setCurrentLevel(0);
+    setSubflowStack([]);
+    setCurrentSubflowId(null);
+    setHierarchicalBlocks(new Map());
+    setParentState(null);
+    localStorage.removeItem("flowClipboard");
   }, []);
+
+  const importFlow = useCallback(
+    (flowData) => {
+      try {
+        // First reset everything
+        setNodes([]);
+        setEdges([]);
+
+        // Reinitialize nodes with proper configuration handling
+        const reinitializedNodes = flowData.nodes.map((node) => {
+          const type = node.id.split("_")[0];
+          const baseConfig = getBlockConfig(type);
+
+          // Preserve existing port configurations while ensuring proper structure
+          const ports = {
+            inputs: {},
+            outputs: {},
+          };
+
+          // Handle input ports
+          Object.entries(node.data.config.ports.inputs || {}).forEach(
+            ([portName, portConfig]) => {
+              ports.inputs[portName] = {
+                width: { default: portConfig.width?.default || 32 },
+                signed: { default: portConfig.signed?.default || false },
+              };
+            }
+          );
+
+          // Handle output ports
+          Object.entries(node.data.config.ports.outputs || {}).forEach(
+            ([portName, portConfig]) => {
+              ports.outputs[portName] = {
+                width: { default: portConfig.width?.default || 32 },
+                signed: { default: portConfig.signed?.default || false },
+              };
+            }
+          );
+
+          // Create reinitialized node
+          return {
+            ...node,
+            type: "hdlNode",
+            data: {
+              ...node.data,
+              config: {
+                ...baseConfig,
+                ...node.data.config,
+                ports,
+              },
+              params: node.data.params || {},
+              onParameterChange,
+              onNavigateToSubflow: node.data.isSubflow
+                ? onNavigateToSubflow
+                : undefined,
+              isSubflow: node.data.isSubflow,
+            },
+          };
+        });
+
+        // Reinitialize edges with proper styling and animation
+        const reinitializedEdges = flowData.edges.map((edge) => ({
+          ...edge,
+          type: "default",
+          animated: true,
+          style: { stroke: "#333" },
+        }));
+
+        setNodes(reinitializedNodes);
+        setEdges(reinitializedEdges);
+        setModuleName(flowData.moduleName);
+
+        if (flowData.hierarchicalBlocks) {
+          setHierarchicalBlocks(new Map(flowData.hierarchicalBlocks));
+        }
+        if (flowData.flowStack) {
+          setFlowStack(flowData.flowStack);
+          setCurrentLevel(flowData.currentLevel || 0);
+        }
+      } catch (error) {
+        console.error("Error importing flow:", error);
+        alert("Error importing flow. Please check the file format.");
+      }
+    },
+    [onParameterChange, onNavigateToSubflow]
+  );
 
   return {
     nodes,
@@ -370,8 +476,12 @@ export const useHDLFlow = () => {
     navigateToChild,
     exportFlow,
     importFlow,
+    clearGraph,
     setNodes,
     setEdges,
     onParameterChange,
+    currentSubflowId,
+    onNavigateToSubflow,
+    onNavigateBack,
   };
 };

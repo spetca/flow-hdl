@@ -6,12 +6,14 @@ import OutPortBlock from "../blocks/OutPort";
 import DelayBlock from "../blocks/Delay";
 import HDLNode from "../flowgraph/hdlnode/HDLNode";
 import BlockConfiguration from "../configuration/BlockConfiguration";
+import SubflowBlock from "../blocks/Subflow";
 
 // Block type constants
 export const BlockTypes = {
   PRIMITIVE: "primitive",
   INPORT: "inport",
   OUTPORT: "outport",
+  SUBFLOW: "subflow", // Add new type
 };
 
 // Registry of all available blocks
@@ -43,6 +45,12 @@ export const blockRegistry = {
     component: MultiplierBlock,
     config: MultiplierBlock.blockConfig,
     generateVerilog: MultiplierBlock.generateVerilog,
+  },
+  subflow: {
+    type: BlockTypes.SUBFLOW,
+    component: SubflowBlock,
+    config: SubflowBlock.blockConfig,
+    generateVerilog: SubflowBlock.generateVerilog,
   },
 };
 

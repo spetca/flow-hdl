@@ -124,16 +124,22 @@ src/
 │   │   ├── InPort.jsx
 │   │   ├── OutPort.jsx
 │   │   ├── Delay.jsx
+│   ├── configuration/           # block param dialog
+│   │   ├── BlockConfiguration.jsx
 │   ├── flowgraph/               # Flowgraph-related logic
 │   │   ├── FlowGraph.jsx
-│   │   ├── HDLNode.jsx
+│   │   ├── hdlnode/
+│   │   │   ├── HDLNode.jsx
+│   │   │   ├── NodeParameter.jsx
+│   │   │   ├── NodePorts.jsx
+│   │   │   ├── NodeShape.jsx
+│   │   │   ├── NodeTitle.jsx
 │   │   ├── hooks/
 │   │   │   ├── useFlowKeyboardShortcuts.jsx
 │   │   │   ├── useHDLFlow.jsx
 │   │   ├── BlockLibrary.jsx     # Displays available blocks
 │   ├── file/                    # File-related components
 │   │   ├── FileDrawer.jsx
-│   │   ├── FileManager.jsx      # Wrapper component for file handling
 │   ├── controls/                # User control components
 │   │   ├── ControlPanel.jsx
 │   │   ├── KeyoardShortcuts.jsx
@@ -144,4 +150,8 @@ src/
 │   ├── useFileManager.jsx
 |── lib/
 │   ├── SystemVerilogGenerator.jsx
+│   ├── nodeinitialization.jsx
+│   ├── parameterUtils.jsx
+│   ├── shapeUtils.jsx
+
 ```

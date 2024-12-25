@@ -8,6 +8,7 @@ import FileDrawer from "./components/file/FileDrawer";
 import { ReactFlowProvider } from "reactflow";
 import { useHDLFlow } from "./components/flowgraph/hooks/useHDLFlow";
 import { useFileManager } from "./hooks/useFileManager";
+import BlockConfigurationV2 from "./components/configuration/BlockConfiguration";
 
 const App = () => {
   // UI State
@@ -28,6 +29,8 @@ const App = () => {
     setModuleName,
     currentSystem,
     navigateToParent,
+    currentSubflowId, // Add this
+    onNavigateBack, // Add this
     exportFlow,
     importFlow,
     onParameterChange,
@@ -115,7 +118,7 @@ const App = () => {
             setModuleName={setModuleName}
             generateHDL={handleGenerateHDL}
             exportFlow={exportFlow}
-            setShowClearConfirmation={clearGraph}
+            clearGraph={clearGraph}
             importFlow={importFlow}
           />
 
@@ -131,6 +134,8 @@ const App = () => {
             onDragOver={onDragOver}
             currentSystem={currentSystem}
             navigateToParent={navigateToParent}
+            currentSubflowId={currentSubflowId} // Add this
+            onNavigateBack={onNavigateBack} // Add this
             importFlow={importFlow} // Explicitly pass importFlow here
             generateHDL={handleGenerateHDL}
             onParameterChange={onParameterChange}

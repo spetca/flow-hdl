@@ -1,4 +1,5 @@
 import { blockRegistry } from "../components/blockHelpers";
+import { SubflowHandler } from '../lib/subflowHandler';
 
 class SystemVerilogGenerator {
   constructor(flowGraphJson) {

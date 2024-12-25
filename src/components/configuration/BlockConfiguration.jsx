@@ -1,194 +1,126 @@
+// components/configuration/BlockConfiguration.jsx
 import React, { useState, useEffect } from "react";
 import { NodeToolbar } from "reactflow";
 
 const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
-  const { config, name: blockName, ...restData } = data;
-  const [name, setName] = useState(blockName || "");
+  const [config, setConfig] = useState(data.config);
+  const [name, setName] = useState(data.name || "");
+  const [portConfigs, setPortConfigs] = useState({
+    inputs: {},
+    outputs: {},
+  });
+  const [paramConfigs, setParamConfigs] = useState({});
 
-  // Deep clone config to avoid direct mutations
-  const [portConfig, setPortConfig] = useState(() => ({
-    inputs: Object.fromEntries(
-      Object.entries(config.ports.inputs || {}).map(([name, port]) => [
-        name,
-        {
-          width: {
-            default:
-              typeof port.width === "object"
-                ? port.width.default || port.width.value || 32
-                : port.width || 32,
-          },
-          signed: {
-            default:
-              typeof port.signed === "object"
-                ? port.signed.default || port.signed.value || false
-                : port.signed || false,
-          },
-        },
-      ])
-    ),
-    outputs: Object.fromEntries(
-      Object.entries(config.ports.outputs || {}).map(([name, port]) => [
-        name,
-        {
-          width: {
-            default:
-              typeof port.width === "object"
-                ? port.width.default || port.width.value || 32
-                : port.width || 32,
-          },
-          signed: {
-            default:
-              typeof port.signed === "object"
-                ? port.signed.default || port.signed.value || false
-                : port.signed || false,
-          },
-        },
-      ])
-    ),
-  }));
-
-  // Handle params more robustly
-  const [paramConfig, setParamConfig] = useState(() =>
-    Object.fromEntries(
-      Object.entries(config.params || {}).map(([key, param]) => [
-        key,
-        {
-          ...param,
-          default:
-            param.default !== undefined
-              ? param.default
-              : param.type === "boolean"
-              ? false
-              : 0,
-        },
-      ])
-    )
-  );
-
-  // Reset state when modal opens
+  // Initialize state when dialog opens
   useEffect(() => {
     if (isOpen) {
-      setName(blockName || "");
+      setConfig(data.config);
+      setName(data.name || "");
 
-      // Reset port configurations
-      setPortConfig({
-        inputs: Object.fromEntries(
-          Object.entries(config.ports.inputs || {}).map(([name, port]) => [
-            name,
-            {
+      // Initialize port configurations
+      const initialPorts = {
+        inputs: {},
+        outputs: {},
+      };
+
+      ["inputs", "outputs"].forEach((portType) => {
+        Object.entries(data.config.ports[portType] || {}).forEach(
+          ([portName, port]) => {
+            initialPorts[portType][portName] = {
               width:
                 typeof port.width === "object"
-                  ? port.width.default || port.width.value || 32
-                  : port.width || 32,
+                  ? port.width.default
+                  : port.width,
               signed:
                 typeof port.signed === "object"
-                  ? port.signed.default || port.signed.value || false
-                  : port.signed || false,
-            },
-          ])
-        ),
-        outputs: Object.fromEntries(
-          Object.entries(config.ports.outputs || {}).map(([name, port]) => [
-            name,
-            {
-              width:
-                typeof port.width === "object"
-                  ? port.width.default || port.width.value || 32
-                  : port.width || 32,
-              signed:
-                typeof port.signed === "object"
-                  ? port.signed.default || port.signed.value || false
-                  : port.signed || false,
-            },
-          ])
-        ),
+                  ? port.signed.default
+                  : port.signed,
+            };
+          }
+        );
       });
+      setPortConfigs(initialPorts);
 
-      // Reset parameter configurations
-      setParamConfig(
-        Object.fromEntries(
-          Object.entries(config.params || {}).map(([key, param]) => [
-            key,
-            {
-              ...param,
-              default:
-                param.default !== undefined
-                  ? param.default
-                  : param.type === "boolean"
-                  ? false
-                  : 0,
-            },
-          ])
-        )
-      );
+      // Initialize parameter configurations
+      const initialParams = {};
+      Object.entries(data.config.params || {}).forEach(([paramName, param]) => {
+        initialParams[paramName] = param.default;
+      });
+      setParamConfigs(initialParams);
     }
-  }, [isOpen, config, blockName]);
+  }, [isOpen, data]);
+
+  const handlePortConfigChange = (portType, portName, field, value) => {
+    setPortConfigs((prev) => ({
+      ...prev,
+      [portType]: {
+        ...prev[portType],
+        [portName]: {
+          ...prev[portType][portName],
+          [field]: value,
+        },
+      },
+    }));
+  };
+
+  const handleParamChange = (paramName, value) => {
+    setParamConfigs((prev) => ({
+      ...prev,
+      [paramName]: value,
+    }));
+  };
 
   const handleSave = () => {
-    // Construct comprehensive update object
+    // Construct the update object with all changes
     const updates = {
-      name: name || config.name,
+      name,
       config: {
         ...config,
-        name: name || config.name,
+        name,
         ports: {
           inputs: Object.fromEntries(
-            Object.entries(portConfig.inputs).map(([name, port]) => [
-              name,
+            Object.entries(config.ports.inputs || {}).map(([portName]) => [
+              portName,
               {
-                width: { default: Number(port.width) },
-                signed: { default: Boolean(port.signed) },
+                width: { default: portConfigs.inputs[portName].width },
+                signed: { default: portConfigs.inputs[portName].signed },
               },
             ])
           ),
           outputs: Object.fromEntries(
-            Object.entries(portConfig.outputs).map(([name, port]) => [
-              name,
+            Object.entries(config.ports.outputs || {}).map(([portName]) => [
+              portName,
               {
-                width: { default: Number(port.width) },
-                signed: { default: Boolean(port.signed) },
+                width: { default: portConfigs.outputs[portName].width },
+                signed: { default: portConfigs.outputs[portName].signed },
               },
             ])
           ),
         },
         params: Object.fromEntries(
-          Object.entries(paramConfig).map(([key, value]) => [
-            key,
+          Object.entries(config.params || {}).map(([paramName]) => [
+            paramName,
             {
-              ...config.params[key],
-              default: value.default,
+              ...config.params[paramName],
+              default: paramConfigs[paramName],
             },
           ])
         ),
       },
-      params: Object.fromEntries(
-        Object.entries(paramConfig).map(([key, value]) => [key, value.default])
-      ),
-      ports: {
-        inputs: portConfig.inputs,
-        outputs: portConfig.outputs,
-      },
+      params: paramConfigs,
     };
 
-    console.log("Saving updates:", updates);
-
-    // Call update method
     onUpdate(updates);
-
-    // Close modal
     onClose();
   };
-
-  if (!isOpen) return null;
 
   return (
     <NodeToolbar
       isVisible={isOpen}
       position="right"
-      className="bg-white rounded-lg shadow-xl p-4 min-w-[360px]"
+      className="bg-white rounded-lg shadow-xl p-4 min-w-[400px]"
     >
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex justify-between items-center border-b pb-2">
           <h3 className="text-lg font-semibold">Configure {config.name}</h3>
           <button
@@ -199,146 +131,116 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
           </button>
         </div>
 
-        {/* Name Input */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Name
-          </label>
+        {/* Node Name */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Node Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-            placeholder={config.name}
+            className="w-full border rounded-md p-2"
           />
         </div>
 
-        {/* Parameters */}
-        {Object.keys(config.params || {}).length > 0 && (
-          <div>
-            <h4 className="font-medium mb-2">Parameters</h4>
-            <div className="space-y-2">
-              {Object.entries(config.params).map(([name, param]) => (
-                <div key={name} className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600 flex-1">{name}</label>
-                  {param.type === "boolean" ? (
-                    <input
-                      type="checkbox"
-                      checked={paramConfig[name].default}
-                      onChange={(e) =>
-                        setParamConfig((prev) => ({
-                          ...prev,
-                          [name]: {
-                            ...prev[name],
-                            default: e.target.checked,
-                          },
-                        }))
-                      }
-                      className="rounded border-gray-300"
-                    />
-                  ) : (
+        {/* Port Configurations */}
+        {["inputs", "outputs"].map((portType) => (
+          <div key={portType} className="space-y-2">
+            <h4 className="font-medium capitalize">{portType}</h4>
+            {Object.entries(config.ports[portType] || {}).map(([portName]) => (
+              <div key={portName} className="border rounded-md p-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{portName}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600">
+                      Bitwidth
+                    </label>
                     <input
                       type="number"
-                      value={paramConfig[name].default}
-                      min={param.min}
-                      max={param.max}
+                      value={portConfigs[portType][portName]?.width || 32}
                       onChange={(e) =>
-                        setParamConfig((prev) => ({
-                          ...prev,
-                          [name]: {
-                            ...prev[name],
-                            default: Number(e.target.value),
-                          },
-                        }))
+                        handlePortConfigChange(
+                          portType,
+                          portName,
+                          "width",
+                          parseInt(e.target.value, 10)
+                        )
                       }
-                      className="w-20 rounded-md border-gray-300"
+                      className="w-full border rounded-md p-1"
+                      min="1"
+                      max="512"
                     />
-                  )}
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600">
+                      Signed
+                    </label>
+                    <input
+                      type="checkbox"
+                      checked={portConfigs[portType][portName]?.signed || false}
+                      onChange={(e) =>
+                        handlePortConfigChange(
+                          portType,
+                          portName,
+                          "signed",
+                          e.target.checked
+                        )
+                      }
+                      className="mt-2"
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {/* Parameters */}
+        {Object.keys(config.params || {}).length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-medium">Parameters</h4>
+            {Object.entries(config.params).map(([paramName, param]) => (
+              <div key={paramName} className="border rounded-md p-3">
+                <label className="block text-sm text-gray-600">
+                  {paramName}
+                </label>
+                {param.type === "boolean" ? (
+                  <input
+                    type="checkbox"
+                    checked={paramConfigs[paramName] || false}
+                    onChange={(e) =>
+                      handleParamChange(paramName, e.target.checked)
+                    }
+                    className="mt-1"
+                  />
+                ) : (
+                  <input
+                    type="number"
+                    value={paramConfigs[paramName] || 0}
+                    onChange={(e) =>
+                      handleParamChange(paramName, parseInt(e.target.value, 10))
+                    }
+                    className="w-full border rounded-md p-1"
+                    min={param.min}
+                    max={param.max}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Port Configuration */}
-        {["inputs", "outputs"].map((portType) => {
-          const ports = config.ports[portType];
-          if (!Object.keys(ports || {}).length) return null;
-
-          return (
-            <div key={portType}>
-              <h4 className="font-medium mb-2">
-                {portType.charAt(0).toUpperCase() + portType.slice(1)}
-              </h4>
-              <div className="space-y-2">
-                {Object.entries(ports).map(([name, port]) => (
-                  <div key={name} className="border rounded-md p-2">
-                    <div className="font-medium text-sm mb-1">{name}</div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs text-gray-500">
-                          Width
-                        </label>
-                        <input
-                          type="number"
-                          value={portConfig[portType][name].width}
-                          min={1}
-                          onChange={(e) =>
-                            setPortConfig((prev) => ({
-                              ...prev,
-                              [portType]: {
-                                ...prev[portType],
-                                [name]: {
-                                  ...prev[portType][name],
-                                  width: Number(e.target.value),
-                                },
-                              },
-                            }))
-                          }
-                          className="w-full rounded-md border-gray-300 text-sm"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="block text-xs text-gray-500">
-                          Signed
-                        </label>
-                        <input
-                          type="checkbox"
-                          checked={portConfig[portType][name].signed}
-                          onChange={(e) =>
-                            setPortConfig((prev) => ({
-                              ...prev,
-                              [portType]: {
-                                ...prev[portType],
-                                [name]: {
-                                  ...prev[portType][name],
-                                  signed: e.target.checked,
-                                },
-                              },
-                            }))
-                          }
-                          className="rounded border-gray-300"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Footer */}
-        <div className="flex justify-end gap-2 pt-2 border-t">
+        <div className="flex justify-end gap-2 pt-4">
           <button
             onClick={onClose}
-            className="px-3 py-1 border rounded-md hover:bg-gray-50"
+            className="px-4 py-2 border rounded-md hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
             Save
           </button>
