@@ -1,4 +1,3 @@
-// src/components/flowgraph/hooks/useFlowIO.jsx
 import { useState, useCallback } from "react";
 import registry from "../../blockHelpers/BlockRegistry";
 import { normalizeConfig } from "../../../lib/parameterUtils";
@@ -20,7 +19,7 @@ export const useFlowIO = ({
 }) => {
   const [moduleName, setModuleName] = useState("top_module");
 
-  // Export the current flow state to a JSON file
+  // Export functionality remains the same...
   const exportFlow = useCallback(() => {
     const flowData = {
       nodes,
@@ -44,7 +43,7 @@ export const useFlowIO = ({
     URL.revokeObjectURL(url);
   }, [nodes, edges, moduleName, hierarchicalBlocks, flowStack, currentLevel]);
 
-  // Reset all state to initial values
+  // Clear functionality remains the same...
   const clearGraph = useCallback(() => {
     setNodes([]);
     setEdges([]);
@@ -68,7 +67,7 @@ export const useFlowIO = ({
     setParentState,
   ]);
 
-  // Import a flow from a JSON file
+  // Updated import functionality
   const importFlow = useCallback(
     (flowData) => {
       try {
@@ -79,7 +78,13 @@ export const useFlowIO = ({
         // Reinitialize nodes with proper configuration
         const reinitializedNodes = flowData.nodes.map((node) => {
           const type = node.id.split("_")[0];
-          const baseConfig = registry.get(type);
+          // Use getConfig instead of get
+          const baseConfig = registry.getConfig(type);
+
+          if (!baseConfig) {
+            console.warn(`No configuration found for block type: ${type}`);
+            return node;
+          }
 
           // Initialize ports with proper structure
           const ports = {
@@ -146,7 +151,9 @@ export const useFlowIO = ({
         }
       } catch (error) {
         console.error("Error importing flow:", error);
-        alert("Error importing flow. Please check the file format.");
+        alert(
+          `Error importing flow: ${error.message}. Please check the file format.`
+        );
       }
     },
     [
