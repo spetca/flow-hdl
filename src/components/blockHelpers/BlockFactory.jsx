@@ -1,10 +1,9 @@
-// blockFactory.js
 import React from "react";
 import HDLNode from "../flowgraph/hdlnode/HDLNode";
 
 // Helper to generate dynamic config based on port parameters
-const createDynamicConfig = (baseConfig, props) => {
-  const config = { ...baseConfig };
+const createDynamicConfig = (baseConfig, props, uiConfig) => {
+  const config = { ...baseConfig, ...uiConfig };
   const { portParams = {}, blockParams = {} } = props.params || {};
 
   // Update ports based on parameters
@@ -22,9 +21,9 @@ const createDynamicConfig = (baseConfig, props) => {
 };
 
 // Factory function to create a new block type
-export const createBlock = ({ config, generateVerilog }) => {
+export const createBlock = ({ config, generateVerilog, uiConfig }) => {
   const BlockComponent = (props) => {
-    const dynamicConfig = createDynamicConfig(config, props);
+    const dynamicConfig = createDynamicConfig(config, props, uiConfig);
 
     return (
       <HDLNode

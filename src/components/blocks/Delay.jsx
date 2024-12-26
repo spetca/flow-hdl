@@ -2,10 +2,9 @@
 import { createBlock } from "../blockHelpers/BlockFactory";
 
 const config = {
-  type: "delay",
   name: "Delay",
-  synchronous: true,
   description: "Delays input signal by specified number of clock cycles",
+  synchronous: true,
   params: {
     DELAY: {
       type: "number",
@@ -79,12 +78,4 @@ const generateVerilog = ({ name = "delay", ports, params }) => {
 endmodule`;
 };
 
-const DelayBlock = createBlock({ config, generateVerilog });
-
-// Debug check
-console.log("DelayBlock created:", {
-  config: DelayBlock.blockConfig,
-  verilog: DelayBlock.generateVerilog,
-});
-
-export default DelayBlock;
+export default createBlock({ config, generateVerilog });
