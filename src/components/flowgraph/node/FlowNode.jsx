@@ -11,9 +11,13 @@ import BlockConfiguration from "../../configuration/BlockConfiguration";
 
 const FlowNode = ({ data, id, selected }) => {
   const { config, isConfigOpen, setIsConfigOpen, handleUpdate } = useNodeConfig(
-    data,
-    id
+    {
+      config: data.config,
+      onParameterChange: data.onParameterChange, // Explicitly pass onParameterChange
+      id,
+    }
   );
+
   const { nodeSize, handleResize } = useNodeResize(config);
   const { handleDoubleClick, handleSubflowDoubleClick } = useNodeNavigation(
     data,
@@ -50,7 +54,11 @@ const FlowNode = ({ data, id, selected }) => {
 
       {isConfigOpen && (
         <BlockConfiguration
-          data={{ config: config, name: data.name }}
+          data={{
+            config,
+            name: data.name,
+            onParameterChange: data.onParameterChange, // Pass it through to BlockConfiguration
+          }}
           isOpen={isConfigOpen}
           onClose={() => setIsConfigOpen(false)}
           onUpdate={handleUpdate}

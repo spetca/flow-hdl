@@ -1,5 +1,6 @@
 // src/App.jsx
 import React, { useState } from "react";
+import { Library, Keyboard } from "lucide-react";
 import FlowGraph from "./components/flowgraph/FlowGraph";
 import BlockLibrary from "./components/BlockLibrary";
 import KeyboardShortcuts from "./components/controls/KeyboardShortcuts";
@@ -64,11 +65,38 @@ const App = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col">
-      {/* Rest of the component remains the same */}
+      {/* Top Bar */}
       <div className="h-12 border-b flex items-center px-4 bg-white">
-        {/* ... existing top bar code ... */}
+        <h1 className="text-xl font-semibold">flow hdl</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={toggleShortcuts}
+            className={`p-2 rounded-md flex items-center gap-2 text-sm transition-colors ${
+              activePanel === "shortcuts"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
+            title="Toggle Keyboard Shortcuts"
+          >
+            <Keyboard className="w-5 h-5" />
+            <span>Shortcuts</span>
+          </button>
+          <button
+            onClick={toggleLibrary}
+            className={`p-2 rounded-md flex items-center gap-2 text-sm transition-colors ${
+              activePanel === "library"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
+            title="Toggle Block Library"
+          >
+            <Library className="w-5 h-5" />
+            <span>
+              {activePanel === "library" ? "Hide Library" : "Show Library"}
+            </span>
+          </button>
+        </div>
       </div>
-
       <div className="flex-1 relative">
         <ReactFlowProvider>
           <ControlPanel

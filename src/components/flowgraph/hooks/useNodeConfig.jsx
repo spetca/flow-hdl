@@ -1,33 +1,32 @@
-// src/components/flowgraph/hooks/useNodeConfig.jsx
 import { useState, useEffect, useCallback } from "react";
 import { normalizeConfig } from "../../../lib/parameterUtils";
 
-export const useNodeConfig = (data, id) => {
-  // This came directly from HDLNode
+export const useNodeConfig = ({
+  config: initialConfig,
+  onParameterChange,
+  id,
+}) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const [config, setConfig] = useState(normalizeConfig(data.config));
+  const [config, setConfig] = useState(normalizeConfig(initialConfig));
 
   useEffect(() => {
-    setConfig(normalizeConfig(data.config));
-  }, [data.config]);
+    setConfig(normalizeConfig(initialConfig));
+  }, [initialConfig]);
 
   const handleUpdate = useCallback(
     (updates) => {
-      const normalizedConfig = normalizeConfig({
-        ...config,
-        name: updates.name,
-        ports: updates.config.ports,
-        params: updates.config.params,
-      });
+      if (!onParameterChange) {
+        console.error("onParameterChange is not defined");
+        return;
+      }
 
-      setConfig(normalizedConfig);
-      data.onParameterChange(id, {
+      onParameterChange(id, {
         name: updates.name,
-        config: normalizedConfig,
+        config: updates.config,
         params: updates.params,
       });
     },
-    [config, id, data.onParameterChange]
+    [id, onParameterChange]
   );
 
   return {

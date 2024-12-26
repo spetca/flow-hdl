@@ -4,30 +4,48 @@ import { useCallback } from "react";
 import registry from "../../blockHelpers/BlockRegistry";
 import { createInitializedNode } from "../../../lib/nodeInitialization";
 
-export const useFlowNodes = () => {
+export const useFlowNodes = ({
+  onNavigateToSubflow,
+  setHierarchicalBlocks,
+}) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
-  const onParameterChange = useCallback((nodeId, updates) => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              name: updates.name,
-              config: updates.config,
-              params: updates.params,
-              onParameterChange,
-              onNavigateToSubflow: node.data.onNavigateToSubflow,
-              isSubflow: node.data.isSubflow,
-            },
-          };
-        }
-        return node;
-      })
-    );
-  }, []);
+  const onParameterChange = useCallback(
+    (nodeId, updates) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                name: updates.name,
+                config: updates.config,
+                params: updates.params,
+                onParameterChange,
+                onNavigateToSubflow: node.data.onNavigateToSubflow,
+                isSubflow: node.data.isSubflow,
+              },
+            };
+          }
+          return node;
+        })
+      );
+
+      if (updates.isSubflow && updates.config.ports) {
+        setHierarchicalBlocks((prev) => {
+          const blockData = prev.get(nodeId) || { nodes: [], edges: [] };
+          return new Map(
+            prev.set(nodeId, {
+              ...blockData,
+              ports: updates.config.ports,
+            })
+          );
+        });
+      }
+    },
+    [setHierarchicalBlocks]
+  );
 
   const onDrop = useCallback(
     (event) => {
@@ -52,12 +70,25 @@ export const useFlowNodes = () => {
         name: nodeName,
         onParameterChange,
         isSubflow: type === "subflow",
-        onNavigateToSubflow: nodes[0]?.data?.onNavigateToSubflow, // Pass from existing node
+        onNavigateToSubflow,
       });
+
+      if (type === "subflow") {
+        setHierarchicalBlocks((prev) => {
+          const initializedPorts = newNode.data.config.ports;
+          return new Map(
+            prev.set(newNodeId, {
+              nodes: [],
+              edges: [],
+              ports: initializedPorts,
+            })
+          );
+        });
+      }
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [nodes, onParameterChange]
+    [nodes, onParameterChange, onNavigateToSubflow, setHierarchicalBlocks]
   );
 
   const onDragOver = useCallback((event) => {

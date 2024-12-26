@@ -5,7 +5,6 @@ import ReactFlow, {
   Background,
   Panel,
   SelectionMode,
-  addEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import FlowNode from "./node/FlowNode"; // Updated import
@@ -64,7 +63,9 @@ const FlowGraph = ({
   useEffect(() => {
     const importDefaultFlow = async () => {
       try {
-        const defaultFlowModule = await import("../../assets/default_flow.json");
+        const defaultFlowModule = await import(
+          "../../assets/default_flow.json"
+        );
         if (defaultFlowModule.default && importFlow) {
           importFlow(defaultFlowModule.default);
         }

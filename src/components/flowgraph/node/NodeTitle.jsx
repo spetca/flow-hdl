@@ -1,15 +1,14 @@
-// components/flowgraph/NodeTitle.jsx
 import React from "react";
 
-export const NodeTitle = ({ config, name, isSpecialShape, shapeStyles }) => {
+export const NodeTitle = ({ config, name, isSpecialShape }) => {
   const getNodeColor = () => {
     switch (config.type) {
       case "inport":
-        return "bg-blue-500";
+        return "bg-black/80 hover:bg-black";
       case "outport":
-        return "bg-pink-500";
+        return "bg-black/80 hover:bg-black";
       default:
-        return "bg-purple-500";
+        return "bg-black/80 hover:bg-black";
     }
   };
 
@@ -19,16 +18,22 @@ export const NodeTitle = ({ config, name, isSpecialShape, shapeStyles }) => {
       typeof port.signed === "object" ? port.signed.default : !!port.signed,
   });
 
+  const baseClasses =
+    "text-center text-white backdrop-blur-sm transition-colors duration-200";
+  const specialShapeClasses =
+    "h-full flex flex-col items-center justify-center";
+  const regularClasses =
+    "absolute bottom-0 left-0 right-0 rounded-b-lg py-1.5 px-3 font-medium text-sm shadow-sm border-t border-black/20";
+
   return (
     <div
-      className={`text-center text-white ${getNodeColor()} ${
-        isSpecialShape
-          ? "h-full flex flex-col items-center justify-center"
-          : "rounded-t-lg py-2 px-3 font-bold"
-      }`}
-      style={isSpecialShape ? shapeStyles : undefined}
+      className={`
+        ${baseClasses}
+        ${getNodeColor()}
+        ${isSpecialShape ? specialShapeClasses : regularClasses}
+      `}
     >
-      <div className="font-bold">{name || config.name}</div>
+      <div className="font-medium">{name || config.name}</div>
       {isSpecialShape && (
         <SpecialShapePorts
           config={config}
@@ -40,11 +45,13 @@ export const NodeTitle = ({ config, name, isSpecialShape, shapeStyles }) => {
 };
 
 const SpecialShapePorts = ({ config, getPortDisplayValues }) => {
+  const portClassName = "text-xs mt-0.5 text-white/90";
+
   if (config.type === "inport") {
     return Object.entries(config.ports.outputs || {}).map(([portId, port]) => {
       const { width, signed } = getPortDisplayValues(port);
       return (
-        <div key={`output-${portId}`} className="text-sm mt-1">
+        <div key={`output-${portId}`} className={portClassName}>
           [{width - 1}:0]{signed && "(s)"}
         </div>
       );
@@ -55,7 +62,7 @@ const SpecialShapePorts = ({ config, getPortDisplayValues }) => {
     return Object.entries(config.ports.inputs || {}).map(([portId, port]) => {
       const { width, signed } = getPortDisplayValues(port);
       return (
-        <div key={`input-${portId}`} className="text-sm mt-1">
+        <div key={`input-${portId}`} className={portClassName}>
           [{width - 1}:0]{signed && "(s)"}
         </div>
       );
