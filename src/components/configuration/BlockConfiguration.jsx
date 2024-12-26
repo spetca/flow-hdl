@@ -5,6 +5,11 @@ import { NodeToolbar } from "reactflow";
 const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
   const [config, setConfig] = useState(data.config);
   const [name, setName] = useState(data.name || "");
+
+  const [instanceName, setInstanceName] = useState(
+    data.instanceName || data.config.defaultInstanceName || ""
+  );
+
   const [portConfigs, setPortConfigs] = useState({
     inputs: {},
     outputs: {},
@@ -16,6 +21,9 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
     if (isOpen) {
       setConfig(data.config);
       setName(data.name || "");
+      setInstanceName(
+        data.instanceName || data.config.defaultInstanceName || ""
+      );
 
       // Initialize port configurations
       const initialPorts = {
@@ -76,7 +84,8 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
       name,
       config: {
         ...config,
-        name,
+        name: config.name, // Keep original block type name
+        instanceName: instanceName,
         ports: {
           inputs: Object.fromEntries(
             Object.entries(config.ports.inputs || {}).map(([portName]) => [
@@ -131,15 +140,24 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
           </button>
         </div>
 
-        {/* Node Name */}
+        {/* Instance Name */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium">Node Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border rounded-md p-2"
-          />
+          <label className="block text-sm font-medium">
+            Verilog Instance Name
+          </label>
+          <div className="flex items-center space-x-1">
+            <span className="text-gray-500">u_</span>
+            <input
+              type="text"
+              value={instanceName}
+              onChange={(e) => setInstanceName(e.target.value)}
+              className="flex-1 border rounded-md p-2"
+              placeholder={config.defaultInstanceName}
+            />
+          </div>
+          <p className="text-sm text-gray-500">
+            This name will be used in Verilog as u_{instanceName}
+          </p>
         </div>
 
         {/* Port Configurations */}
@@ -157,19 +175,22 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
                       Bitwidth
                     </label>
                     <input
-                      type="number"
-                      value={portConfigs[portType][portName]?.width || 32}
-                      onChange={(e) =>
+                      type="text" // Changed from number to text
+                      value={portConfigs[portType][portName]?.width ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseInt(e.target.value, 10);
                         handlePortConfigChange(
                           portType,
                           portName,
                           "width",
-                          parseInt(e.target.value, 10)
-                        )
-                      }
+                          isNaN(value) ? null : value
+                        );
+                      }}
                       className="w-full border rounded-md p-1"
-                      min="1"
-                      max="512"
+                      placeholder="Enter width"
                     />
                   </div>
                   <div>
@@ -216,14 +237,17 @@ const BlockConfiguration = ({ data, isOpen, onClose, onUpdate }) => {
                   />
                 ) : (
                   <input
-                    type="number"
-                    value={paramConfigs[paramName] || 0}
-                    onChange={(e) =>
-                      handleParamChange(paramName, parseInt(e.target.value, 10))
-                    }
+                    type="text" // Changed from number to text
+                    value={paramConfigs[paramName] ?? ""}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === ""
+                          ? null
+                          : parseInt(e.target.value, 10);
+                      handleParamChange(paramName, isNaN(value) ? null : value);
+                    }}
                     className="w-full border rounded-md p-1"
-                    min={param.min}
-                    max={param.max}
+                    placeholder="Enter value"
                   />
                 )}
               </div>

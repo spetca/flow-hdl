@@ -2,9 +2,7 @@ import registry from "../components/blockHelpers/BlockRegistry.jsx";
 
 class SystemVerilogGenerator {
   constructor(flowGraphJson) {
-    // Destructure directly from the JSON
     const { nodes, edges, moduleName, hierarchicalBlocks } = flowGraphJson;
-
     this.nodes = nodes;
     this.edges = edges;
     this.moduleName = moduleName;
@@ -30,7 +28,6 @@ class SystemVerilogGenerator {
         }`;
       });
 
-    // Add clock to input ports but only at top level
     inputPorts.unshift("input logic clk");
 
     return `module ${this.moduleName} (\n    ${[
@@ -40,7 +37,6 @@ class SystemVerilogGenerator {
   }
 
   getPortDeclaration(portConfig) {
-    // Ensure we're using actual numeric values, not object references
     const width =
       typeof portConfig.width === "number"
         ? portConfig.width
@@ -54,17 +50,6 @@ class SystemVerilogGenerator {
     return `${signType} [${width - 1}:0]`;
   }
 
-  generateUniqueWireName(baseName) {
-    let wireName = baseName;
-    let counter = 1;
-    while (this.usedWireNames.has(wireName)) {
-      wireName = `${baseName}_${counter}`;
-      counter++;
-    }
-    this.usedWireNames.add(wireName);
-    return wireName;
-  }
-
   generateWireNameForConnection(
     sourceId,
     sourceHandle,
@@ -73,7 +58,6 @@ class SystemVerilogGenerator {
   ) {
     const sourceNode = this.nodes.find((n) => n.id === sourceId);
     const targetNode = this.nodes.find((n) => n.id === targetId);
-
     return `wire_${sourceNode.data.name}_${sourceHandle}_to_${targetNode.data.name}_${targetHandle}`;
   }
 
@@ -100,13 +84,11 @@ class SystemVerilogGenerator {
         connection.targetHandle
       );
 
-      // Add to wire declarations
       const wireDecl = `logic ${signed ? "signed " : ""}[${
         width - 1
       }:0] ${wireName};`;
       wireDeclarations.add(wireDecl);
 
-      // Add to assign declarations if it's an input port
       if (connection.sourceType === "inport") {
         assignDeclarations.add(
           `assign ${wireName} = ${connection.sourceName};`
@@ -116,8 +98,9 @@ class SystemVerilogGenerator {
 
     return `// Wire declarations\n${Array.from(wireDeclarations).join("\n")}
   
-  // Assign declarations\n${Array.from(assignDeclarations).join("\n")}`;
+// Assign declarations\n${Array.from(assignDeclarations).join("\n")}`;
   }
+
   findWiringConnections() {
     const connections = [];
     this.edges.forEach((edge) => {
@@ -165,10 +148,11 @@ class SystemVerilogGenerator {
           node.data.config.type !== "outport"
       )
       .map((node) => {
-        const moduleType = node.data.config.type;
-        const instanceName = `u_${node.data.name}`;
+        // Use config.name for module name instead of type
+        const moduleName = node.data.config.name.toLowerCase();
+        // Use instanceName for the specific instance
+        const instanceName = node.data.instanceName || node.data.name;
 
-        // Extract actual numeric values for port widths
         const portParams = [];
         Object.entries(node.data.config.ports.inputs || {}).forEach(
           ([portName, port]) => {
@@ -190,7 +174,6 @@ class SystemVerilogGenerator {
           }
         );
 
-        // Handle block parameters
         Object.entries(node.data.params || {}).forEach(([paramName, value]) => {
           const formattedValue =
             typeof value === "boolean" ? (value ? "1" : "0") : value;
@@ -200,7 +183,6 @@ class SystemVerilogGenerator {
         const parameterList =
           portParams.length > 0 ? ` #(\n${portParams.join(",\n")}\n    )` : "";
 
-        // Generate port mappings (excluding clock - it will be added separately)
         const portMappings = Object.entries(node.data.config.ports).flatMap(
           ([portType, ports]) =>
             Object.entries(ports).map(([portId, port]) => {
@@ -223,12 +205,11 @@ class SystemVerilogGenerator {
             })
         );
 
-        // Add clock to port mappings
         if (node.data.config.synchronous) {
           portMappings.push("        .clk(clk)");
         }
 
-        return `${moduleType}${parameterList} ${instanceName} (\n${portMappings.join(
+        return `${moduleName}${parameterList} u_${instanceName} (\n${portMappings.join(
           ",\n"
         )}\n    );`;
       })
@@ -236,26 +217,27 @@ class SystemVerilogGenerator {
   }
 
   generateBlockModules() {
-    const processedTypes = new Set();
+    const processedModules = new Set();
 
     this.nodes.forEach((node) => {
       if (
         node.data.config.type !== "inport" &&
         node.data.config.type !== "outport"
       ) {
-        const blockType = node.data.config.type;
+        // Use config.name for module name
+        const moduleName = node.data.config.name.toLowerCase();
 
-        if (!processedTypes.has(blockType)) {
-          processedTypes.add(blockType);
+        if (!processedModules.has(moduleName)) {
+          processedModules.add(moduleName);
 
-          // Use the block's own Verilog generation - no clock injection needed
-          const generateVerilog = registry.getGenerateVerilog(blockType);
+          const generateVerilog = registry.getGenerateVerilog(moduleName);
 
-          this.files[`${blockType}.sv`] = generateVerilog({
-            name: blockType,
-            ports: node.data.config.ports,
-            params: {},
-          });
+          if (generateVerilog) {
+            this.files[`${moduleName}.sv`] = generateVerilog({
+              ports: node.data.config.ports,
+              params: node.data.params || {},
+            });
+          }
         }
       }
     });

@@ -1,4 +1,3 @@
-// src/components/flowgraph/node/FlowNode.jsx
 import React, { memo } from "react";
 import { NodeShape } from "./NodeShape";
 import { NodeTitle } from "./NodeTitle";
@@ -13,7 +12,7 @@ const FlowNode = ({ data, id, selected }) => {
   const { config, isConfigOpen, setIsConfigOpen, handleUpdate } = useNodeConfig(
     {
       config: data.config,
-      onParameterChange: data.onParameterChange, // Explicitly pass onParameterChange
+      onParameterChange: data.onParameterChange,
       id,
     }
   );
@@ -27,6 +26,7 @@ const FlowNode = ({ data, id, selected }) => {
 
   const isSpecialShape = config.shape?.type !== undefined;
 
+  console.log("flownode data", data);
   return (
     <>
       <NodeShape
@@ -46,6 +46,7 @@ const FlowNode = ({ data, id, selected }) => {
         <NodeTitle
           config={config}
           name={data.name}
+          instanceName={data.instanceName}
           isSpecialShape={isSpecialShape}
         />
         <NodePorts config={config} isSpecialShape={isSpecialShape} />
@@ -57,7 +58,8 @@ const FlowNode = ({ data, id, selected }) => {
           data={{
             config,
             name: data.name,
-            onParameterChange: data.onParameterChange, // Pass it through to BlockConfiguration
+            instanceName: data.instanceName,
+            onParameterChange: data.onParameterChange,
           }}
           isOpen={isConfigOpen}
           onClose={() => setIsConfigOpen(false)}

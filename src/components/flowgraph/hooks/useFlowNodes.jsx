@@ -15,12 +15,15 @@ export const useFlowNodes = ({
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
+            console.log("onparamchange", updates);
+
             return {
               ...node,
               data: {
                 ...node.data,
                 name: updates.name,
                 config: updates.config,
+                instanceName: updates.config.instanceName,
                 params: updates.params,
                 onParameterChange,
                 onNavigateToSubflow: node.data.onNavigateToSubflow,
@@ -67,7 +70,8 @@ export const useFlowNodes = ({
         id: newNodeId,
         position,
         config,
-        name: nodeName,
+        name: config.name,
+        instanceName: nodeName,
         onParameterChange,
         isSubflow: type === "subflow",
         onNavigateToSubflow,

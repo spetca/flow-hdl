@@ -1,6 +1,6 @@
 import React from "react";
 
-export const NodeTitle = ({ config, name, isSpecialShape }) => {
+export const NodeTitle = ({ config, name, instanceName, isSpecialShape }) => {
   const getNodeColor = () => {
     switch (config.type) {
       case "inport":
@@ -11,12 +11,6 @@ export const NodeTitle = ({ config, name, isSpecialShape }) => {
         return "bg-black/80 hover:bg-black";
     }
   };
-
-  const getPortDisplayValues = (port) => ({
-    width: port.width?.default || port.width || 32,
-    signed:
-      typeof port.signed === "object" ? port.signed.default : !!port.signed,
-  });
 
   const baseClasses =
     "text-center text-white backdrop-blur-sm transition-colors duration-200";
@@ -33,23 +27,22 @@ export const NodeTitle = ({ config, name, isSpecialShape }) => {
         ${isSpecialShape ? specialShapeClasses : regularClasses}
       `}
     >
-      <div className="font-medium">{name || config.name}</div>
-      {isSpecialShape && (
-        <SpecialShapePorts
-          config={config}
-          getPortDisplayValues={getPortDisplayValues}
-        />
-      )}
+      <div className="font-medium">
+        {name}/u_{instanceName}
+      </div>
+      {isSpecialShape && <SpecialShapePorts config={config} />}
     </div>
   );
 };
 
-const SpecialShapePorts = ({ config, getPortDisplayValues }) => {
+const SpecialShapePorts = ({ config }) => {
   const portClassName = "text-xs mt-0.5 text-white/90";
 
   if (config.type === "inport") {
     return Object.entries(config.ports.outputs || {}).map(([portId, port]) => {
-      const { width, signed } = getPortDisplayValues(port);
+      const width = port.width?.default || port.width || 32;
+      const signed =
+        typeof port.signed === "object" ? port.signed.default : !!port.signed;
       return (
         <div key={`output-${portId}`} className={portClassName}>
           [{width - 1}:0]{signed && "(s)"}
@@ -60,7 +53,9 @@ const SpecialShapePorts = ({ config, getPortDisplayValues }) => {
 
   if (config.type === "outport") {
     return Object.entries(config.ports.inputs || {}).map(([portId, port]) => {
-      const { width, signed } = getPortDisplayValues(port);
+      const width = port.width?.default || port.width || 32;
+      const signed =
+        typeof port.signed === "object" ? port.signed.default : !!port.signed;
       return (
         <div key={`input-${portId}`} className={portClassName}>
           [{width - 1}:0]{signed && "(s)"}

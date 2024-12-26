@@ -1,240 +1,291 @@
 {
   "nodes": [
     {
-      "id": "inport_1734979785564",
+      "id": "inport_1735249215810",
       "type": "hdlNode",
       "position": {
-        "x": -341.19684072291165,
-        "y": 193.39377589603956
+        "x": -482.88500452504275,
+        "y": -15.780079864774407
       },
       "data": {
         "config": {
           "type": "inport",
           "name": "Input Port",
           "description": "Input port for HDL module",
-          "shape": {
-            "type": "oval",
-            "width": 120,
-            "height": 80,
-            "lockAspectRatio": true
-          },
           "ports": {
             "inputs": {},
             "outputs": {
               "out": {
-                "width": 32,
-                "signed": true
+                "width": {
+                  "default": 32
+                },
+                "signed": {
+                  "default": false
+                }
               }
             }
           },
-          "params": {}
+          "defaultInstanceName": "input port"
         },
-        "name": "inport0",
+        "name": "Input Port",
         "params": {},
-        "isHierarchical": false,
+        "isSubflow": false,
         "internalNodes": [],
         "internalEdges": []
       },
-      "width": 75,
-      "height": 65,
+      "width": 200,
+      "height": 150,
       "selected": false,
-      "dragging": false,
       "positionAbsolute": {
-        "x": -341.19684072291165,
-        "y": 193.39377589603956
-      }
+        "x": -482.88500452504275,
+        "y": -15.780079864774407
+      },
+      "dragging": false
     },
     {
-      "id": "outport_1734979786996",
+      "id": "adder_1735249218355",
       "type": "hdlNode",
       "position": {
-        "x": 908.1534459916395,
-        "y": 199.63740265481036
+        "x": -48.98876033681378,
+        "y": -13.053786479815805
+      },
+      "data": {
+        "config": {
+          "name": "Adder",
+          "description": "Adds two numbers together",
+          "synchronous": false,
+          "ports": {
+            "inputs": {
+              "a": {
+                "width": {
+                  "default": 32
+                },
+                "signed": {
+                  "default": false
+                }
+              },
+              "b": {
+                "width": {
+                  "default": 32
+                },
+                "signed": {
+                  "default": false
+                }
+              }
+            },
+            "outputs": {
+              "sum": {
+                "width": {
+                  "default": 8
+                },
+                "signed": {
+                  "default": true
+                }
+              }
+            }
+          },
+          "defaultInstanceName": "adder",
+          "instanceName": "add0",
+          "params": {}
+        },
+        "name": "Adder",
+        "params": {},
+        "isSubflow": false,
+        "internalNodes": [],
+        "internalEdges": [],
+        "instanceName": "add0"
+      },
+      "width": 200,
+      "height": 150,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -48.98876033681378,
+        "y": -13.053786479815805
+      },
+      "dragging": false
+    },
+    {
+      "id": "delay_1735249242393",
+      "type": "hdlNode",
+      "position": {
+        "x": 310.53920789402025,
+        "y": -15.752525495247284
+      },
+      "data": {
+        "config": {
+          "name": "Delay",
+          "description": "Delays input signal by specified number of clock cycles",
+          "synchronous": true,
+          "params": {
+            "DELAY": {
+              "type": "number",
+              "default": 20,
+              "min": 0,
+              "max": 512,
+              "description": "Number of clock cycles to delay"
+            }
+          },
+          "ports": {
+            "inputs": {
+              "in": {
+                "width": {
+                  "default": 8
+                },
+                "signed": {
+                  "default": true
+                }
+              }
+            },
+            "outputs": {
+              "out": {
+                "width": {
+                  "default": 8
+                },
+                "signed": {
+                  "default": false
+                }
+              }
+            }
+          },
+          "defaultInstanceName": "delay",
+          "instanceName": "delay"
+        },
+        "name": "Delay",
+        "params": {
+          "DELAY": 20
+        },
+        "isSubflow": false,
+        "internalNodes": [],
+        "internalEdges": [],
+        "instanceName": "delay"
+      },
+      "width": 200,
+      "height": 150,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 310.53920789402025,
+        "y": -15.752525495247284
+      },
+      "dragging": false
+    },
+    {
+      "id": "outport_1735249266640",
+      "type": "hdlNode",
+      "position": {
+        "x": 698.6753793661765,
+        "y": -13.47496064764104
       },
       "data": {
         "config": {
           "type": "outport",
           "name": "Output Port",
           "description": "Output port for HDL module",
-          "shape": {
-            "type": "oval",
-            "width": 120,
-            "height": 80,
-            "lockAspectRatio": true
-          },
           "ports": {
             "inputs": {
               "in": {
-                "width": 32,
-                "signed": true
+                "width": {
+                  "default": 8
+                },
+                "signed": {
+                  "default": true
+                }
               }
             },
             "outputs": {}
           },
+          "defaultInstanceName": "output port",
+          "instanceName": "output port",
           "params": {}
         },
-        "name": "outport1",
+        "name": "Output Port",
         "params": {},
-        "isHierarchical": false,
+        "isSubflow": false,
         "internalNodes": [],
-        "internalEdges": []
-      },
-      "width": 75,
-      "height": 65,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 908.1534459916395,
-        "y": 199.63740265481036
-      }
-    },
-    {
-      "id": "adder_1734989972142",
-      "type": "hdlNode",
-      "position": {
-        "x": 39.12679321539608,
-        "y": 157.33686715863686
-      },
-      "data": {
-        "config": {
-          "type": "adder",
-          "name": "Adder",
-          "synchronous": false,
-          "description": "Adds two numbers together",
-          "ports": {
-            "inputs": {
-              "a": {
-                "width": 32,
-                "signed": true
-              },
-              "b": {
-                "width": 32,
-                "signed": true
-              }
-            },
-            "outputs": {
-              "sum": {
-                "width": 32,
-                "signed": true
-              }
-            }
-          },
-          "params": {}
-        },
-        "name": "adder2",
-        "params": {},
-        "isHierarchical": false,
-        "internalNodes": [],
-        "internalEdges": []
+        "internalEdges": [],
+        "instanceName": "output port"
       },
       "width": 200,
       "height": 150,
       "selected": false,
       "positionAbsolute": {
-        "x": 39.12679321539608,
-        "y": 157.33686715863686
-      },
-      "dragging": false
-    },
-    {
-      "id": "delay_1735003985976",
-      "type": "hdlNode",
-      "position": {
-        "x": 502.6666666666667,
-        "y": 151.1515340972348
-      },
-      "data": {
-        "config": {
-          "type": "delay",
-          "name": "Delay",
-          "synchronous": true,
-          "description": "Delays input signal by specified number of clock cycles",
-          "params": {
-            "DELAY": {
-              "default": 20
-            }
-          },
-          "ports": {
-            "inputs": {
-              "in": {
-                "width": 32,
-                "signed": true
-              }
-            },
-            "outputs": {
-              "out": {
-                "width": 32,
-                "signed": true
-              }
-            }
-          }
-        },
-        "name": "delay",
-        "params": {
-          "DELAY": 20
-        },
-        "isHierarchical": false,
-        "internalNodes": [],
-        "internalEdges": []
-      },
-      "width": 200,
-      "height": 150,
-      "selected": true,
-      "positionAbsolute": {
-        "x": 502.6666666666667,
-        "y": 151.1515340972348
+        "x": 698.6753793661765,
+        "y": -13.47496064764104
       },
       "dragging": false
     }
   ],
   "edges": [
     {
-      "source": "inport_1734979785564",
+      "type": "default",
+      "animated": true,
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 1
+      },
+      "source": "inport_1735249215810",
       "sourceHandle": "out",
-      "target": "adder_1734989972142",
+      "target": "adder_1735249218355",
       "targetHandle": "a",
-      "type": "bezier",
-      "animated": true,
-      "style": {
-        "stroke": "#333"
-      },
-      "id": "reactflow__edge-inport_1734979785564out-adder_1734989972142a"
+      "id": "reactflow__edge-inport_1735249215810out-adder_1735249218355a",
+      "label": "ufix32",
+      "data": {
+        "isValid": true,
+        "error": null
+      }
     },
     {
-      "source": "inport_1734979785564",
+      "type": "default",
+      "animated": true,
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 1
+      },
+      "source": "inport_1735249215810",
       "sourceHandle": "out",
-      "target": "adder_1734989972142",
+      "target": "adder_1735249218355",
       "targetHandle": "b",
-      "type": "bezier",
-      "animated": true,
-      "style": {
-        "stroke": "#333"
-      },
-      "id": "reactflow__edge-inport_1734979785564out-adder_1734989972142b"
+      "id": "reactflow__edge-inport_1735249215810out-adder_1735249218355b",
+      "label": "ufix32",
+      "data": {
+        "isValid": true,
+        "error": null
+      }
     },
     {
-      "source": "adder_1734989972142",
+      "type": "default",
+      "animated": true,
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 1
+      },
+      "source": "adder_1735249218355",
       "sourceHandle": "sum",
-      "target": "delay_1735003985976",
+      "target": "delay_1735249242393",
       "targetHandle": "in",
-      "type": "bezier",
-      "animated": true,
-      "style": {
-        "stroke": "#333"
-      },
-      "id": "reactflow__edge-adder_1734989972142sum-delay_1735003985976in"
+      "id": "reactflow__edge-adder_1735249218355sum-delay_1735249242393in",
+      "label": "sfix8",
+      "data": {
+        "isValid": true,
+        "error": null
+      }
     },
     {
-      "source": "delay_1735003985976",
-      "sourceHandle": "out",
-      "target": "outport_1734979786996",
-      "targetHandle": "in",
-      "type": "bezier",
+      "type": "default",
       "animated": true,
       "style": {
-        "stroke": "#333"
+        "stroke": "#ff0000",
+        "strokeWidth": 20
       },
-      "id": "reactflow__edge-delay_1735003985976out-outport_1734979786996in"
+      "source": "delay_1735249242393",
+      "sourceHandle": "out",
+      "target": "outport_1735249266640",
+      "targetHandle": "in",
+      "id": "reactflow__edge-delay_1735249242393out-outport_1735249266640in",
+      "label": "ufix8",
+      "data": {
+        "isValid": false,
+        "error": "Bitwidth or sign mismatch"
+      }
     }
   ],
   "moduleName": "top_module",

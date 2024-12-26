@@ -50,6 +50,7 @@ export const useConnectionValidator = (edges, setEdges) => {
         ...edge,
         style: {
           ...edge.style,
+          strokeWidth: isValid ? 1 : 20,
           stroke: isValid ? "#333" : "#ff0000",
         },
         animated: true,
