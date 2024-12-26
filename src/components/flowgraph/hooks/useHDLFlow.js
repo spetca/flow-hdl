@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNodesState, useEdgesState, addEdge } from "reactflow";
-import { getBlockConfig } from "../../blockHelpers";
+import registry from "../../blockHelpers/BlockRegistry.jsx"
 import { createInitializedNode } from "../../../lib/nodeInitialization";
 
 export const useHDLFlow = () => {
@@ -207,6 +207,7 @@ export const useHDLFlow = () => {
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
+      // type below is the key of the block registry, not sure how tho...
       const type = event.dataTransfer.getData("application/json");
       console.log("type of block:", type);
       const isSubflow = type === "subflow";
@@ -218,13 +219,12 @@ export const useHDLFlow = () => {
         y: (event.clientY - reactFlowBounds.top - 50) / 1.5,
       };
 
-      const config = getBlockConfig(type);
+      const config = registry.get(type);
       const newNodeId = `${type}_${Date.now()}`;
       const nodeName = `${type}${nodes.length}`;
 
       const newNode = createInitializedNode({
         id: newNodeId,
-        type,
         position,
         config,
         name: nodeName,
@@ -385,7 +385,7 @@ export const useHDLFlow = () => {
         // Reinitialize nodes with proper configuration handling
         const reinitializedNodes = flowData.nodes.map((node) => {
           const type = node.id.split("_")[0];
-          const baseConfig = getBlockConfig(type);
+          const baseConfig = registry.get(type);
 
           // Preserve existing port configurations while ensuring proper structure
           const ports = {

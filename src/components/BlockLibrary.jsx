@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { blockRegistry } from "./blockHelpers";
+import registry from "./blockHelpers/BlockRegistry.jsx";
 
 const BlockLibrary = ({ isOpen, onToggle }) => {
   const [width, setWidth] = useState(20); // Default to 20% of viewport
@@ -7,7 +7,7 @@ const BlockLibrary = ({ isOpen, onToggle }) => {
 
   // Debug logging
   useEffect(() => {
-    console.log("BlockLibrary mounted, registry:", blockRegistry);
+    console.log("BlockLibrary mounted, registry:", registry);
   }, []);
 
   const onDragStart = (event, nodeType) => {
@@ -73,7 +73,7 @@ const BlockLibrary = ({ isOpen, onToggle }) => {
 
         <div className="flex-1 overflow-y-auto p-4">
           <div className="space-y-2">
-            {Object.entries(blockRegistry).map(([type, { config }]) => (
+            {Object.entries(registry.registry).map(([type, { config }]) => (
               <div
                 key={type}
                 className="px-3 py-1.5 bg-white border border-black/80 rounded text-sm font-medium hover:bg-black hover:text-white transition-colors duration-200 cursor-grab"

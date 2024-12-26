@@ -67,7 +67,6 @@ export const initializeParams = (config) => {
 
 export const createInitializedNode = ({
   id,
-  type,
   position,
   config,
   name,
