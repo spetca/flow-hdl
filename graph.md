@@ -1,3 +1,4 @@
+```mermaid
 graph TD
 subgraph UI["User Interface Layer"]
 App["App.jsx\n(Main Application)"]
@@ -85,3 +86,4 @@ end
 
     FG --> CV
     CV --> CH
+```
