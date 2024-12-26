@@ -1,4 +1,4 @@
-import { SubflowHandler } from '../lib/subflowHandler';
+import { SubflowHandler } from "../lib/subflowHandler";
 import registry from "../components/blockHelpers/BlockRegistry.jsx";
 
 class SystemVerilogGenerator {
@@ -250,7 +250,7 @@ class SystemVerilogGenerator {
           processedTypes.add(blockType);
 
           // Use the block's own Verilog generation - no clock injection needed
-          const generateVerilog = registry.getGenerateVerilog[blockType];
+          const generateVerilog = registry.getGenerateVerilog(blockType);
 
           this.files[`${blockType}.sv`] = generateVerilog({
             name: blockType,
