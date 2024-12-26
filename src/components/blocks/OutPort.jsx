@@ -5,12 +5,6 @@ const config = {
   type: "outport",
   name: "Output Port",
   description: "Output port for HDL module",
-  shape: {
-    type: "oval",
-    width: 120,
-    height: 80,
-    lockAspectRatio: true,
-  },
   ports: {
     inputs: {
       in: {
@@ -26,12 +20,13 @@ const config = {
 // OutPorts don't need Verilog generation as they're handled by the parent module
 const generateVerilog = null;
 
-const OutPortBlock = createBlock({ config, generateVerilog });
+const uiConfig = {
+  shape: {
+    type: "oval",
+    width: 120,
+    height: 80,
+    lockAspectRatio: true,
+  }
+};
 
-// Debug check
-console.log("OutPortBlock created:", {
-  config: OutPortBlock.blockConfig,
-  verilog: OutPortBlock.generateVerilog,
-});
-
-export default OutPortBlock;
+export default createBlock({ config, generateVerilog, uiConfig });

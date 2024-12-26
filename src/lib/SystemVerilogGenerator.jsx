@@ -1,5 +1,4 @@
-import { blockRegistry } from "../components/blockHelpers";
-import { SubflowHandler } from '../lib/subflowHandler';
+import registry from "../components/blockHelpers/BlockRegistry.jsx";
 
 class SystemVerilogGenerator {
   constructor(flowGraphJson) {
@@ -249,15 +248,14 @@ class SystemVerilogGenerator {
         if (!processedTypes.has(blockType)) {
           processedTypes.add(blockType);
 
-          const blockConfig = blockRegistry[blockType];
           // Use the block's own Verilog generation - no clock injection needed
-          const blockModule = blockConfig.generateVerilog({
+          const generateVerilog = registry.getGenerateVerilog(blockType);
+
+          this.files[`${blockType}.sv`] = generateVerilog({
             name: blockType,
             ports: node.data.config.ports,
             params: {},
           });
-
-          this.files[`${blockType}.sv`] = blockModule;
         }
       }
     });

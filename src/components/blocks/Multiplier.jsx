@@ -2,7 +2,6 @@
 import { createBlock } from "../blockHelpers/BlockFactory";
 
 const config = {
-  type: "multiplier",
   name: "Multiplier",
   synchronous: false,
   description: "Multiplies two numbers",
@@ -69,12 +68,4 @@ const generateVerilog = ({ name = "multiplier", ports, params }) => {
 endmodule`;
 };
 
-const MultiplierBlock = createBlock({ config, generateVerilog });
-
-// Debug check
-console.log("MultiplierBlock created:", {
-  config: MultiplierBlock.blockConfig,
-  verilog: MultiplierBlock.generateVerilog,
-});
-
-export default MultiplierBlock;
+export default createBlock({ config, generateVerilog });

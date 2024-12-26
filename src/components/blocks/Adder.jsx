@@ -2,10 +2,9 @@
 import { createBlock } from "../blockHelpers/BlockFactory";
 
 const config = {
-  type: "adder",
   name: "Adder",
-  synchronous: false,
   description: "Adds two numbers together",
+  synchronous: false,
   ports: {
     inputs: {
       a: {

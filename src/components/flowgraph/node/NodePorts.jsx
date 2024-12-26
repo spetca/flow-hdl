@@ -12,8 +12,9 @@ export const NodePorts = ({ config, isSpecialShape }) => {
 
   const getPortDisplayValues = (port) => ({
     width: port.width?.default || port.width || 32,
-    signed:
-      typeof port.signed === "object" ? port.signed.default : !!port.signed,
+    signed: typeof port.signed === "object"
+        ? port.signed.default
+        : !!port.signed,
   });
 
   const renderPort = (portId, port, index, total, isInput) => {

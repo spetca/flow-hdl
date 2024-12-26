@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useReactFlow, getConnectedEdges } from "reactflow";
-import { getBlockConfig } from "../../blockHelpers";
 import { createInitializedNode } from "../../../lib/nodeInitialization";
 
 export const useFlowKeyboardShortcuts = ({
@@ -85,8 +84,8 @@ export const useFlowKeyboardShortcuts = ({
             // Create new nodes with proper initialization
             const newNodes = clipboard.nodes.map((node) => {
               const type = node.data.config.type;
-              const baseConfig = getBlockConfig(type);
-              const newId = `${type}_${now}_${Math.random()
+              const baseConfig = node.data.config;
+              const newId = `${now}_${Math.random()
                 .toString(36)
                 .substr(2, 9)}`;
               idMap[node.id] = newId;
@@ -109,13 +108,11 @@ export const useFlowKeyboardShortcuts = ({
               // Create new node with initialization
               const initializedNode = createInitializedNode({
                 id: newId,
-                type,
                 position: { x, y },
                 config: {
                   ...baseConfig,
                   // Preserve any customized config values from the source node
                   ...node.data.config,
-                  type, // Ensure type is set correctly
                 },
                 name: newNodeName,
                 onParameterChange, // Use the onParameterChange from props

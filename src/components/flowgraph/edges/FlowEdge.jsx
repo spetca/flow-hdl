@@ -1,8 +1,8 @@
-// components/flowgraph/edges/ConnectionEdge.jsx
+// src/components/flowgraph/edges/FlowEdge.jsx
 import React from "react";
 import { BaseEdge, getBezierPath } from "reactflow";
 
-const ConnectionEdge = ({
+const FlowEdge = ({
   sourceX,
   sourceY,
   targetX,
@@ -41,4 +41,4 @@ const ConnectionEdge = ({
   );
 };
 
-export default ConnectionEdge;
+export default FlowEdge;

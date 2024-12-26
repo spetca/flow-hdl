@@ -1,6 +1,3 @@
-// 1. First, create src/components/blocks/Subflow.jsx
-import React from "react";
-
 const SubflowBlock = {
   blockConfig: {
     name: "Subflow",
@@ -50,4 +47,5 @@ const SubflowBlock = {
     return "";
   },
 };
+
 export default SubflowBlock;
