@@ -248,15 +248,14 @@ class SystemVerilogGenerator {
         if (!processedTypes.has(blockType)) {
           processedTypes.add(blockType);
 
-          const blockConfig = registry.get(blockType);
           // Use the block's own Verilog generation - no clock injection needed
-          const blockModule = blockConfig.generateVerilog({
+          const generateVerilog = registry.getGenerateVerilog(blockType);
+
+          this.files[`${blockType}.sv`] = generateVerilog({
             name: blockType,
             ports: node.data.config.ports,
             params: {},
           });
-
-          this.files[`${blockType}.sv`] = blockModule;
         }
       }
     });
