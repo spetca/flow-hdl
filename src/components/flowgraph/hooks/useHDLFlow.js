@@ -219,7 +219,7 @@ export const useHDLFlow = () => {
         y: (event.clientY - reactFlowBounds.top - 50) / 1.5,
       };
 
-      const config = registry.get(type);
+      const config = registry.getConfig(type);
       const newNodeId = `${type}_${Date.now()}`;
       const nodeName = `${type}${nodes.length}`;
 
@@ -385,7 +385,7 @@ export const useHDLFlow = () => {
         // Reinitialize nodes with proper configuration handling
         const reinitializedNodes = flowData.nodes.map((node) => {
           const type = node.id.split("_")[0];
-          const baseConfig = registry.get(type);
+          const baseConfig = registry.getConfig(type);
 
           // Preserve existing port configurations while ensuring proper structure
           const ports = {

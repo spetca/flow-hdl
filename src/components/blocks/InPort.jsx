@@ -26,7 +26,7 @@ const uiConfig = {
     width: 120,
     height: 80,
     lockAspectRatio: true,
-  },
-}
+  }
+};
 
 export default createBlock({ config, generateVerilog, uiConfig });

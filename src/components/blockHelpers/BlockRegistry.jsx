@@ -25,6 +25,8 @@ class BlockRegistry {
             return;
         }
 
+        console.log(`${key} block added to registry!`);
+
         this.registry[key] = {
             type: type,
             component: component,
@@ -33,14 +35,30 @@ class BlockRegistry {
         };
     }
 
-    get(key) {
-        if(!this.registry[key]) {
-            console.error(`Registry does not contain ${key} block.`);
+    getConfig(key) {
+        if(!checkRegistry(this.registry, key)) {
             return null;
         }
 
-        return this.registry[key];
+        return this.registry[key].config;
     }
+
+    getGenerateVerilog(key) {
+        if(!checkRegistry(this.registry, key)) {
+            return null;
+        }
+
+        return this.registry[key].generateVerilog;
+    }
+}
+
+function checkRegistry(registry, key) {
+    if(!registry[key]) {
+        console.error(`Registry does not contain ${key} block.`);
+        return false;
+    }
+
+    return true;
 }
 
 const registry = new BlockRegistry();
@@ -52,7 +70,5 @@ registry.add( 'adder', AdderBlock, BlockTypes.PRIMITIVE );
 registry.add( 'delay', DelayBlock, BlockTypes.PRIMITIVE );
 registry.add( 'multiplier', MultiplierBlock, BlockTypes.PRIMITIVE );
 registry.add( 'subflow', SubflowBlock, BlockTypes.PRIMITIVE );
-
-console.log("blockRegistry created:", registry);
 
 export default registry;
