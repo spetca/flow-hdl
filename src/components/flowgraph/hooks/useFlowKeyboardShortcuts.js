@@ -85,9 +85,7 @@ export const useFlowKeyboardShortcuts = ({
             const newNodes = clipboard.nodes.map((node) => {
               const type = node.data.config.type;
               const baseConfig = node.data.config;
-              const newId = `${now}_${Math.random()
-                .toString(36)
-                .substr(2, 9)}`;
+              const newId = `${now}_${Math.random().toString(36).substr(2, 9)}`;
               idMap[node.id] = newId;
 
               const { x, y } = project({
@@ -114,7 +112,8 @@ export const useFlowKeyboardShortcuts = ({
                   // Preserve any customized config values from the source node
                   ...node.data.config,
                 },
-                name: newNodeName,
+                name: node.data.config.name,
+                instanceName: node.data.config.newNodeName,
                 onParameterChange, // Use the onParameterChange from props
                 isHierarchical: node.data.isHierarchical,
               });

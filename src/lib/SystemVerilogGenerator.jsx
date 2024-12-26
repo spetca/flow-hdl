@@ -16,16 +16,18 @@ class SystemVerilogGenerator {
       .filter((node) => node.data.config.type === "inport")
       .map((node) => {
         const portConfig = node.data.config.ports.outputs.out;
-        return `input ${this.getPortDeclaration(portConfig)} ${node.data.name}`;
+        // Use instanceName if available, otherwise fallback to name
+        const portName = node.data.instanceName || node.data.name;
+        return `input ${this.getPortDeclaration(portConfig)} ${portName}`;
       });
 
     const outputPorts = this.nodes
       .filter((node) => node.data.config.type === "outport")
       .map((node) => {
         const portConfig = node.data.config.ports.inputs.in;
-        return `output ${this.getPortDeclaration(portConfig)} ${
-          node.data.name
-        }`;
+        // Use instanceName if available, otherwise fallback to name
+        const portName = node.data.instanceName || node.data.name;
+        return `output ${this.getPortDeclaration(portConfig)} ${portName}`;
       });
 
     inputPorts.unshift("input logic clk");
@@ -34,6 +36,22 @@ class SystemVerilogGenerator {
       ...inputPorts,
       ...outputPorts,
     ].join(",\n    ")}\n);`;
+  }
+
+  generateWireNameForConnection(
+    sourceId,
+    sourceHandle,
+    targetId,
+    targetHandle
+  ) {
+    const sourceNode = this.nodes.find((n) => n.id === sourceId);
+    const targetNode = this.nodes.find((n) => n.id === targetId);
+
+    // Use instanceName if available, otherwise fallback to name
+    const sourceName = sourceNode.data.instanceName || sourceNode.data.name;
+    const targetName = targetNode.data.instanceName || targetNode.data.name;
+
+    return `wire_${sourceName}_${sourceHandle}_to_${targetName}_${targetHandle}`;
   }
 
   getPortDeclaration(portConfig) {
@@ -48,17 +66,6 @@ class SystemVerilogGenerator {
 
     const signType = signed ? "signed" : "logic";
     return `${signType} [${width - 1}:0]`;
-  }
-
-  generateWireNameForConnection(
-    sourceId,
-    sourceHandle,
-    targetId,
-    targetHandle
-  ) {
-    const sourceNode = this.nodes.find((n) => n.id === sourceId);
-    const targetNode = this.nodes.find((n) => n.id === targetId);
-    return `wire_${sourceNode.data.name}_${sourceHandle}_to_${targetNode.data.name}_${targetHandle}`;
   }
 
   generateWireDeclarations() {

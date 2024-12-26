@@ -4,7 +4,7 @@
       "id": "inport_1735249215810",
       "type": "hdlNode",
       "position": {
-        "x": -482.88500452504275,
+        "x": -483.9403631516263,
         "y": -15.780079864774407
       },
       "data": {
@@ -25,9 +25,12 @@
               }
             }
           },
-          "defaultInstanceName": "input port"
+          "defaultInstanceName": "input port",
+          "instanceName": "data_in",
+          "params": {}
         },
         "name": "Input Port",
+        "instanceName": "data_in",
         "params": {},
         "isSubflow": false,
         "internalNodes": [],
@@ -36,11 +39,11 @@
       "width": 200,
       "height": 150,
       "selected": false,
+      "dragging": false,
       "positionAbsolute": {
-        "x": -482.88500452504275,
+        "x": -483.9403631516263,
         "y": -15.780079864774407
-      },
-      "dragging": false
+      }
     },
     {
       "id": "adder_1735249218355",
@@ -89,20 +92,14 @@
           "params": {}
         },
         "name": "Adder",
+        "instanceName": "add0",
         "params": {},
         "isSubflow": false,
         "internalNodes": [],
-        "internalEdges": [],
-        "instanceName": "add0"
+        "internalEdges": []
       },
       "width": 200,
-      "height": 150,
-      "selected": false,
-      "positionAbsolute": {
-        "x": -48.98876033681378,
-        "y": -13.053786479815805
-      },
-      "dragging": false
+      "height": 150
     },
     {
       "id": "delay_1735249242393",
@@ -148,25 +145,19 @@
             }
           },
           "defaultInstanceName": "delay",
-          "instanceName": "delay"
+          "instanceName": "delay0"
         },
         "name": "Delay",
+        "instanceName": "delay0",
         "params": {
           "DELAY": 20
         },
         "isSubflow": false,
         "internalNodes": [],
-        "internalEdges": [],
-        "instanceName": "delay"
+        "internalEdges": []
       },
       "width": 200,
-      "height": 150,
-      "selected": true,
-      "positionAbsolute": {
-        "x": 310.53920789402025,
-        "y": -15.752525495247284
-      },
-      "dragging": false
+      "height": 150
     },
     {
       "id": "outport_1735249266640",
@@ -194,23 +185,19 @@
             "outputs": {}
           },
           "defaultInstanceName": "output port",
-          "instanceName": "output port",
+          "instanceName": "data_out",
           "params": {}
         },
         "name": "Output Port",
+        "instanceName": "data_out",
         "params": {},
         "isSubflow": false,
         "internalNodes": [],
-        "internalEdges": [],
-        "instanceName": "output port"
+        "internalEdges": []
       },
       "width": 200,
       "height": 150,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 698.6753793661765,
-        "y": -13.47496064764104
-      },
+      "selected": true,
       "dragging": false
     }
   ],

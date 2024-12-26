@@ -28,7 +28,7 @@ export const NodeTitle = ({ config, name, instanceName, isSpecialShape }) => {
       `}
     >
       <div className="font-medium">
-        {name}/u_{instanceName}
+        {name}/{instanceName}
       </div>
       {isSpecialShape && <SpecialShapePorts config={config} />}
     </div>

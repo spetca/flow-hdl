@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import registry from "../../blockHelpers/BlockRegistry";
 import { normalizeConfig } from "../../../lib/parameterUtils";
+import { createInitializedNode } from "../../../lib/nodeInitialization";
 
 export const useFlowIO = ({
   nodes,
@@ -16,6 +17,7 @@ export const useFlowIO = ({
   setCurrentSubflowId,
   setHierarchicalBlocks,
   setParentState,
+  onParameterChange,
 }) => {
   const [moduleName, setModuleName] = useState("top_module");
 
@@ -69,7 +71,7 @@ export const useFlowIO = ({
 
   // Updated import functionality
   const importFlow = useCallback(
-    (flowData) => {
+    (flowData, onNavigateToSubflow) => {
       try {
         // Clear current state
         setNodes([]);
@@ -86,46 +88,24 @@ export const useFlowIO = ({
             return node;
           }
 
-          // Initialize ports with proper structure
-          const ports = {
-            inputs: {},
-            outputs: {},
+          // Merge imported node data with base config
+          const mergedConfig = {
+            ...baseConfig,
+            ...node.data.config,
           };
 
-          // Handle input ports
-          Object.entries(node.data.config.ports.inputs || {}).forEach(
-            ([portName, portConfig]) => {
-              ports.inputs[portName] = {
-                width: { default: portConfig.width?.default || 32 },
-                signed: { default: portConfig.signed?.default || false },
-              };
-            }
-          );
-
-          // Handle output ports
-          Object.entries(node.data.config.ports.outputs || {}).forEach(
-            ([portName, portConfig]) => {
-              ports.outputs[portName] = {
-                width: { default: portConfig.width?.default || 32 },
-                signed: { default: portConfig.signed?.default || false },
-              };
-            }
-          );
-
-          // Create reinitialized node with normalized config
-          return {
-            ...node,
-            type: "hdlNode",
-            data: {
-              ...node.data,
-              config: normalizeConfig({
-                ...baseConfig,
-                ...node.data.config,
-                ports,
-              }),
-              params: node.data.params || {},
-            },
-          };
+          // Use createInitializedNode to create the node
+          return createInitializedNode({
+            id: node.id,
+            position: node.position,
+            config: mergedConfig,
+            name: node.data.name,
+            instanceName: node.data.instanceName,
+            onParameterChange: onParameterChange,
+            onNavigateToSubflow:
+              onNavigateToSubflow || node.data.onNavigateToSubflow,
+            isSubflow: node.data.isSubflow,
+          });
         });
 
         // Reinitialize edges with proper styling

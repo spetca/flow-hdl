@@ -25,7 +25,7 @@ const ControlPanel = ({
   return (
     <Panel
       position="top-left"
-      className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm mt-12" // Added mt-12 for margin-top
+      className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm mt-2" // Added mt-12 for margin-top
     >
       <div className="flex flex-wrap gap-2 items-center">
         <ModuleNameInput value={moduleName} onChange={setModuleName} />
@@ -35,10 +35,7 @@ const ControlPanel = ({
         <button onClick={exportFlow} className={buttonStyles}>
           Export Flow
         </button>
-        <button
-          onClick={() => handleClearGraph(true)}
-          className={buttonStyles}
-        >
+        <button onClick={() => handleClearGraph(true)} className={buttonStyles}>
           Clear Graph
         </button>
         <label className={`${buttonStyles} inline-flex cursor-pointer`}>

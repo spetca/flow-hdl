@@ -57,6 +57,7 @@ export const useFlow = () => {
       setCurrentSubflowId,
       setHierarchicalBlocks,
       setParentState,
+      onParameterChange,
     });
 
   return {
