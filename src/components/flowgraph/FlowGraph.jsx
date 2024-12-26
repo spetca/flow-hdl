@@ -1,3 +1,4 @@
+// src/components/flowgraph/FlowGraph.jsx
 import React, { useEffect, useCallback } from "react";
 import ReactFlow, {
   Controls,
@@ -7,17 +8,17 @@ import ReactFlow, {
   addEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import HDLNode from "./hdlnode/HDLNode";
-import ConnectionEdge from "./edges/ConnectionEdge";
+import FlowNode from "./node/FlowNode"; // Updated import
+import FlowEdge from "./edges/FlowEdge"; // Updated import
 import { useFlowKeyboardShortcuts } from "./hooks/useFlowKeyboardShortcuts";
 import { useConnectionValidator } from "./utils/connectionValidator";
 
 const nodeTypes = {
-  hdlNode: HDLNode,
+  hdlNode: FlowNode, // Keep the key as hdlNode for compatibility
 };
 
 const edgeTypes = {
-  default: ConnectionEdge,
+  default: FlowEdge,
 };
 
 const defaultEdgeOptions = {
@@ -53,20 +54,17 @@ const FlowGraph = ({
 
   const validateConnections = useConnectionValidator(edges, setEdges);
 
-  // Validate connections whenever nodes or edges change
   useEffect(() => {
     if (edges?.length > 0) {
       validateConnections();
     }
   }, [nodes, edges, validateConnections]);
 
-  // Import default flow on component mount
+  // Import default flow logic remains the same
   useEffect(() => {
     const importDefaultFlow = async () => {
       try {
-        const defaultFlowModule = await import(
-          "../../assets/default_flow.json"
-        );
+        const defaultFlowModule = await import("../../assets/default_flow.json");
         if (defaultFlowModule.default && importFlow) {
           importFlow(defaultFlowModule.default);
         }
@@ -82,27 +80,13 @@ const FlowGraph = ({
     }
   }, [importFlow, setNodes, setEdges, nodes.length]);
 
-  // Handle new connections
-  const handleConnect = useCallback(
-    (params) => {
-      const newEdge = {
-        ...params,
-        type: "default",
-        animated: true,
-        style: { stroke: "#333" },
-      };
-      setEdges((eds) => addEdge(newEdge, eds));
-    },
-    [setEdges]
-  );
-
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      onConnect={handleConnect}
+      onConnect={onConnect}
       onDrop={onDrop}
       onDragOver={onDragOver}
       nodeTypes={nodeTypes}
@@ -127,17 +111,6 @@ const FlowGraph = ({
         showInteractive={true}
         fitViewOptions={{ padding: 0.1 }}
       />
-
-      {currentSystem && currentSystem.parent && (
-        <Panel position="top-center">
-          <button
-            onClick={navigateToParent}
-            className="px-3 py-1.5 bg-white border border-black/80 rounded text-sm font-medium hover:bg-black hover:text-white transition-colors duration-200"
-          >
-            ← Back to {currentSystem.parent.name}
-          </button>
-        </Panel>
-      )}
 
       {(currentSubflowId || (currentSystem && currentSystem.parent)) && (
         <Panel position="top-center">

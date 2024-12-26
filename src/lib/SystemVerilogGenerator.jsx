@@ -1,4 +1,3 @@
-import { SubflowHandler } from "../lib/subflowHandler";
 import registry from "../components/blockHelpers/BlockRegistry.jsx";
 
 class SystemVerilogGenerator {

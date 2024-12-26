@@ -74,7 +74,7 @@ export const createInitializedNode = ({
   onNavigateToSubflow,
   isSubflow = false,
 }) => {
-  const initializedPorts = initializePortConfigs(config);
+  const initializedPorts = initializePortConfigs(config.config);
   const initializedParams = initializeParams(config);
 
   return {

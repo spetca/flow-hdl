@@ -1,5 +1,5 @@
 import React from "react";
-import HDLNode from "../flowgraph/hdlnode/HDLNode";
+import FlowNode from "../flowgraph/node/FlowNode";
 
 // Helper to generate dynamic config based on port parameters
 const createDynamicConfig = (baseConfig, props, uiConfig) => {
@@ -26,7 +26,7 @@ export const createBlock = ({ config, generateVerilog, uiConfig }) => {
     const dynamicConfig = createDynamicConfig(config, props, uiConfig);
 
     return (
-      <HDLNode
+      <FlowNode
         {...props}
         data={{
           config: dynamicConfig,
