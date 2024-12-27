@@ -12,9 +12,8 @@ export const NodePorts = ({ config, isSpecialShape }) => {
 
   const getPortDisplayValues = (port) => ({
     width: port.width?.default || port.width || 32,
-    signed: typeof port.signed === "object"
-        ? port.signed.default
-        : !!port.signed,
+    signed:
+      typeof port.signed === "object" ? port.signed.default : !!port.signed,
   });
 
   const renderPort = (portId, port, index, total, isInput) => {
@@ -38,7 +37,7 @@ export const NodePorts = ({ config, isSpecialShape }) => {
           <span
             className={`text-sm ${
               isInput ? "ml-2" : "mr-2"
-            } truncate text-gray-600 group-hover:text-gray-900 transition-colors`}
+            } text-gray-600 group-hover:text-gray-900 transition-colors`}
           >
             {portId} [{width - 1}:0]
             {signed && <span className="text-gray-400 ml-1">(s)</span>}

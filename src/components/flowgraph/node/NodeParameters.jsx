@@ -19,16 +19,8 @@ export const NodeParameters = ({ config }) => {
 
   return (
     <>
-      {mainParam && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-2xl font-bold text-gray-500">
-            {mainParam.value}
-          </div>
-        </div>
-      )}
-
       {Object.keys(config.params || {}).length > 0 && (
-        <div className="text-xs bg-gray-50 px-3 py-1 text-gray-600 border-b border-gray-200">
+        <div className="text-xs bg-gray-50 px-1 py-1 text-blue-700 border-b border-gray-500">
           {Object.entries(config.params)
             .map(([name, param]) => `${name}: ${param.default}`)
             .join(", ")}

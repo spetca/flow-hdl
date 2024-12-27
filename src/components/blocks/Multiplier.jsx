@@ -5,6 +5,7 @@ const config = {
   name: "Multiplier",
   synchronous: false,
   description: "Multiplies two numbers",
+  icon: "multiply",
   params: {
     DEFAULT_WIDTH: {
       type: "number",

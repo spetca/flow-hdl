@@ -72,7 +72,7 @@ class SystemVerilogGenerator {
     const wireDeclarations = new Set();
     const assignDeclarations = new Set();
     const connections = this.findWiringConnections();
-
+    console.log(connections);
     connections.forEach((connection) => {
       const width =
         typeof connection.sourcePort.width === "number"
@@ -130,8 +130,8 @@ class SystemVerilogGenerator {
         connections.push({
           source: edge.source,
           target: edge.target,
-          sourceName: sourceNode.data.name || "unnamed_source",
-          targetName: targetNode.data.name || "unnamed_target",
+          sourceName: sourceNode.data.instanceName || "unnamed_source",
+          targetName: targetNode.data.instanceName || "unnamed_target",
           sourcePort: {
             ...sourcePort,
             width,
