@@ -5,7 +5,7 @@ const config = {
   name: "Adder",
   description: "Adds two numbers together",
   synchronous: false,
-  icon: "plus",
+  icon: "+",
   ports: {
     inputs: {
       a: {

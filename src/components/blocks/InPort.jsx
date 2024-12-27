@@ -4,7 +4,7 @@ import { createBlock } from "../blockHelpers/BlockFactory";
 const config = {
   type: "inport",
   name: "Input Port",
-  icon: "box",
+  icon: "x[n]",
   description: "Input port for HDL module",
   ports: {
     inputs: {}, // No inputs

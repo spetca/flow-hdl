@@ -7,7 +7,7 @@ import { useNodeConfig } from "../hooks/useNodeConfig";
 import { useNodeResize } from "../hooks/useNodeResize";
 import { useNodeNavigation } from "../hooks/useNodeNavigation";
 import BlockConfiguration from "../../configuration/BlockConfiguration";
-import NodeIcon from "./NodeIcon";
+import NodeLatex from "./NodeLatex";
 
 const FlowNode = ({ data, id, selected }) => {
   const { config, isConfigOpen, setIsConfigOpen, handleUpdate } = useNodeConfig(
@@ -50,7 +50,7 @@ const FlowNode = ({ data, id, selected }) => {
           instanceName={data.instanceName}
           isSpecialShape={isSpecialShape}
         />
-        <NodeIcon config={config} isSpecialShape={isSpecialShape} />
+        <NodeLatex config={config} isSpecialShape={isSpecialShape} />
         <NodePorts config={config} isSpecialShape={isSpecialShape} />
         <NodeParameters config={config} />
       </NodeShape>

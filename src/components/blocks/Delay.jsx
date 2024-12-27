@@ -5,6 +5,7 @@ const config = {
   name: "Delay",
   description: "Delays input signal by specified number of clock cycles",
   synchronous: true,
+  icon: "z^n",
   params: {
     DELAY: {
       type: "number",
