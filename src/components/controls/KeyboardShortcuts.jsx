@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Keyboard } from "lucide-react";
 
 const KEYBOARD_SHORTCUTS = [
-  { key: "Shift + drag", description: "select multiple blocks" },
-  { key: "Ctrl/⌘ D", description: "generate HDL" },
+  { key: "Shift + drag", description: "Select multiple blocks" },
+  { key: "Ctrl/⌘ D", description: "Generate HDL" },
   { key: "Space", description: "Fit view" },
   { key: "Ctrl/⌘ +", description: "Zoom in" },
   { key: "Ctrl/⌘ -", description: "Zoom out" },
@@ -12,7 +12,7 @@ const KEYBOARD_SHORTCUTS = [
   { key: "Delete/Backspace", description: "Delete selection" },
 ];
 
-const KeyboardShortcuts = ({ isOpen, onToggle }) => {
+const KeyboardShortcuts = ({ isOpen }) => {
   const [width, setWidth] = useState(20); // Default to 20% of viewport
   const [isDragging, setIsDragging] = useState(false);
 
@@ -61,12 +61,6 @@ const KeyboardShortcuts = ({ isOpen, onToggle }) => {
             <Keyboard className="w-5 h-5" />
             <h2 className="font-bold">Keyboard Shortcuts</h2>
           </div>
-          <button
-            onClick={onToggle}
-            className="px-3 py-1.5 bg-white border border-black/80 rounded text-sm font-medium hover:bg-black hover:text-white transition-colors duration-200"
-          >
-            Close
-          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">

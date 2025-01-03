@@ -14,14 +14,11 @@ const ControlPanel = ({
     "px-3 py-1.5 bg-white border border-black/80 rounded text-sm font-medium hover:bg-black hover:text-white transition-colors duration-200";
 
   const handleClearGraph = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear the graph? This cannot be undone."
-      )
-    ) {
+    if (window.confirm("Are you sure you want to clear the graph? This cannot be undone.")) {
       clearGraph();
     }
   };
+
   return (
     <Panel
       position="top-left"
