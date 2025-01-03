@@ -1,9 +1,9 @@
 import React, {useState} from "react";
 import FlowGraph from "./components/flowgraph/FlowGraph";
-import BlockLibrary from "./components/BlockLibrary";
+import BlockLibrary from "./components/controls/BlockLibrary.jsx";
 import KeyboardShortcuts from "./components/controls/KeyboardShortcuts";
 import ControlPanel from "./components/controls/ControlPanel";
-import FileDrawer from "./components/file/FileDrawer";
+import FileDrawer from "./components/controls/FileDrawer.jsx";
 import {ReactFlowProvider} from "reactflow";
 import {useFlow} from "./components/flowgraph/hooks/useFlow";
 import {useFileManager} from "./hooks/useFileManager";
