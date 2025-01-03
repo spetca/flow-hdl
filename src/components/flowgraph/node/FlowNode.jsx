@@ -6,7 +6,7 @@ import { NodeParameters } from "./NodeParameters";
 import { useNodeConfig } from "../hooks/useNodeConfig";
 import { useNodeResize } from "../hooks/useNodeResize";
 import { useNodeNavigation } from "../hooks/useNodeNavigation";
-import BlockConfiguration from "../../configuration/BlockConfiguration";
+import BlockConfiguration from "../../blocks/configuration/BlockConfiguration";
 import NodeLatex from "./NodeLatex";
 
 const FlowNode = ({ data, id, selected }) => {

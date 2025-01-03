@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import registry from "../../blockHelpers/BlockRegistry";
+import registry from "../../blocks/helpers/BlockRegistry.jsx";
 import { normalizeConfig } from "../../../lib/parameterUtils";
 import { createInitializedNode } from "../../../lib/nodeInitialization";
 

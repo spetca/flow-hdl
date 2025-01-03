@@ -1,5 +1,5 @@
 import React from "react";
-import FlowNode from "../flowgraph/node/FlowNode";
+import FlowNode from "../../flowgraph/node/FlowNode.jsx";
 
 const createDynamicConfig = (baseConfig, props, uiConfig) => {
   const config = { ...baseConfig, ...uiConfig };

@@ -1,9 +1,9 @@
-import InPortBlock from "../blocks/InPort.jsx";
-import OutPortBlock from "../blocks/OutPort.jsx";
-import DelayBlock from "../blocks/Delay.jsx";
-import AdderBlock from "../blocks/Adder.jsx";
-import MultiplierBlock from "../blocks/Multiplier.jsx";
-import SubflowBlock from "../blocks/Subflow.jsx";
+import InPortBlock from "../InPort.jsx";
+import OutPortBlock from "../OutPort.jsx";
+import DelayBlock from "../Delay.jsx";
+import AdderBlock from "../Adder.jsx";
+import MultiplierBlock from "../Multiplier.jsx";
+import SubflowBlock from "../Subflow.jsx";
 
 // Block type constants
 export const BlockTypes = {

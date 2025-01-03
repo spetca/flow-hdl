@@ -1,7 +1,7 @@
 // src/components/flowgraph/hooks/useFlowNodes.jsx
 import { useNodesState } from "reactflow";
 import { useCallback } from "react";
-import registry from "../../blockHelpers/BlockRegistry";
+import registry from "../../blocks/helpers/BlockRegistry.jsx";
 import { createInitializedNode } from "../../../lib/nodeInitialization";
 
 export const useFlowNodes = ({

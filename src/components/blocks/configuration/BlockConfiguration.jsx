@@ -1,4 +1,3 @@
-// components/configuration/BlockConfiguration.jsx
 import React, { useState, useEffect } from "react";
 import { NodeToolbar } from "reactflow";
 

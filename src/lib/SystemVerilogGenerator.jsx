@@ -1,4 +1,4 @@
-import registry from "../components/blockHelpers/BlockRegistry.jsx";
+import registry from "../components/blocks/helpers/BlockRegistry.jsx";
 
 class SystemVerilogGenerator {
   constructor(flowGraphJson) {

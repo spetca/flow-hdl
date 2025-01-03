@@ -1,5 +1,5 @@
 // Multiplier.jsx
-import { createBlock } from "../blockHelpers/BlockFactory";
+import { createBlock } from "./helpers/BlockFactory.jsx";
 
 const config = {
   name: "Multiplier",

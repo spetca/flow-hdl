@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import registry from "../blockHelpers/BlockRegistry.jsx";
+import registry from "../blocks/helpers/BlockRegistry.jsx";
 
 const BlockLibrary = ({ isOpen }) => {
   const [width, setWidth] = useState(20); // Default to 20% of viewport
